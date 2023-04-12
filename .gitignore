@@ -2,9 +2,6 @@
 .Rhistory
 .Rapp.history
 
-# Session Data files
-.RData
-
 # User-specific files
 .Ruserdata
 
@@ -19,6 +16,12 @@
 
 # RStudio files
 .Rproj.user/
+
+# RStudio files
+.user/
+
+# any pdf files
+*.pdf
 
 # produced vignettes
 vignettes/*.html
