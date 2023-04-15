@@ -3,7 +3,7 @@
 #' Functions for data generation and fitting of N-mixture models with Time-to-Detection Data
 #'
 #' @author
-#' Linda Haines.
+#' Linda Haines, David Borchers
 #'
 #' @docType package
 #' @name nmitd

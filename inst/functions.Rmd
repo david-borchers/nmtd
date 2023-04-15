@@ -1,0 +1,999 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+  word_document: default
+
+---
+
+\def\by{\mbox{\boldmath$y$}}
+\def \lam{\lambda}
+\def\bt{\mbox{\boldmath$t$}}
+\def \ds{\displaystyle}
+\newcommand{\hg}[2]{\mbox{}_{\scriptscriptstyle #1} F_{\scriptscriptstyle #2}}
+
+# FUNCTIONS
+
+The R code in this section of the Web Appendix is for functions which generate data and which evaluate the log-likelihoods for the $N$-mixture models introduced in the main paper. The  abundance is taken to be site-dependent or constant and the rate parameter and search time to be constant. The functions are called from the R code for the simulations presented in the program section. Each set of functions for a given model is prefaced by the formula for the log-likelihood of that model. 
+
+## Model M1s: Detection/non-detection with a single visit
+
+
+### Formula 
+
+
+For $R_1$ the number of sites at which a detection is recorded,  
+$$
+L_{M1s} (h, \lam_i;\by)=  \prod_{i=1}^{R_1} \big\{ 1- \exp[-\lam_i (1 - e^{-h T})]  \big\}\prod_{i=R_1+1}^{R} \exp[-\lam_i (1 - e^{-h T})]
+$$
+where the data $\by=(y_1, \ldots, y_R)$ is a binary vector.
+If $\lam_i$ is a constant, the unknown parameters $\lam$ and $h$ are not identifiable.
+
+
+### R code
+
+``` {r eval=FALSE}
+# generates  detection/non-detection data for M1s with lambda site-dependent
+xgM1sgen=function(param)
+{
+  b0=param[1]
+  b1=param[2]
+  h=param[3]
+  lambda=exp(b0+b1*vegHt)
+  yvec=matrix(0,R,1)
+  n = rpois(R, lambda)
+  pvec=1-exp(-h*n*Tmax)
+  for(i in 1:R)
+   {yvec[i]=rbinom(1,1,pvec[i])}
+  data=cbind(yvec)
+  return(data)
+}
+
+# evaluates the log-likelihood for M1s with lambda site-dependent
+xgM1s=function(param)
+{
+  b0=param[1]
+  b1=param[2]
+  h=exp(param[3])
+  lam=as.matrix(exp(b0+b1*vegHt))
+  yvec=gdatx
+  loglik=sum(-(1-yvec)*lam*(1-exp(-h*Tmax))+
+                yvec*log(1-exp(-lam*(1-exp(-h*Tmax)))) )
+  return(-loglik)
+}
+ 
+```
+
+## Model M1m: Detection/non-detection with multiple visits
+
+
+### Formula 
+
+
+For $R_1$ the number of sites and $J_{i,1}$ the number of visits within site $i$ at which  detections are recorded,
+\begin{eqnarray*}
+L_{M1m}(h, \lam_i;\by) & = &  \prod_{i=1}^{R_1} \Big[ \sum_{j=0}^{J_{i,1}} \binom{J_{i,1}}{j} (-1)^j \exp(\lam_i  e^{\,- j  h T}) \Big] \times \prod_{i=1}^R  \exp[-\lam_i (1- e^{-  \, h T J_{i,0}})] 
+\end{eqnarray*}
+where $J_{i,0}=J - J_{i,1}$, $i=1, \ldots, R_1$,  $J_{i,0}=J, i=R_1+1, \ldots, R$ and $\by$ is the vector of binary responses, arranged conformably. 
+The formula for constant $\lam$ follows immediately.
+
+
+### R code
+``` {r eval=FALSE}
+# generates detection/non-detection data for M1m with lambda constant
+gM1mgen=function(param)
+{
+  lam=param[1]
+  h=param[2]
+  ymat=matrix(0,R,J)
+  for(i in 1:R)
+   {n = rpois(1, lam)
+    p=1-exp(-h*n*Tmax)
+    ymat[i,]=rbinom(J,1,p)
+  }
+  return(ymat)
+}
+
+# evaluates the log-likelihood for M1m with lambda constant
+gM1m=function(param)
+{
+  lam=exp(param[1])
+  h=exp(param[2])
+  J1=rowSums(gdat) # number of detections at the R sites
+  J0=J-J1
+  loglik=matrix(0,R,1)
+  for(i in 1:R)
+  {
+  J1i=J1[i];
+  J0i=J0[i];
+  term=0;
+  for(j in 0:J1i)
+  {a=exp(-h*Tmax*(j+J0i));
+  term=term+(-1)^j*choose(J1i,j)*(exp(lam*a))
+  }
+  loglik[i]=-lam+log(term)+log(choose(J,J1i))
+  }
+  return(-sum(loglik))
+}
+
+# generates detection/non-detection data for M1m with lambda site-dependent
+xgM1mdat=function(param)
+{
+  b0=param[1]
+  b1=param[2]
+  h=param[3]
+  lambda=exp(b0+b1*vegHt)
+  ymat=matrix(0,R,J)
+  for(i in 1:R)
+  {n = rpois(1,lambda[i])
+  p=1-exp(-h*n*Tmax)
+  for(j in 1:J)
+  {ymat[i,j]=rbinom(1,1,p)}
+  }
+  return(ymat)
+}
+
+# evaluates the log-likelihood for M1m with lambda site-dependent
+xgM1mT=function(param)
+{b0=param[1]
+b1=param[2]
+h=exp(param[3])
+J1=rowSums(gdatx)
+J0=J-J1
+lam=exp(b0+b1*vegHt)
+loglik=matrix(0,R,1)
+# note that if J1[i]=0 the expresson reduces correctly to
+# exp(-lam[1-e^(-hTmax J)])
+for(i in 1:R)
+{ J1i=J1[i];
+J0i=J0[i];
+term=0;
+for(j in 0:J1i)
+{a=exp(-h*Tmax*(j+J0i));
+term=term+(-1)^j*choose(J1i,j)*(exp(lam[i]*a))
+}
+loglik[i]=-lam[i]+log(term)+log(choose(J,J1i))
+}
+return(-sum(loglik))
+}
+```
+
+## Model M2s: Time-to-first-detection with a single visit
+
+
+### Formula 
+
+For $R_t$ the number of sites at which a time-to-first-detection is recorded,
+$$
+L_{M2s} (h, \lam_i; \bt_{(1)}) = \prod_{i=1}^{R_t}  \lam_i \, h \exp [ -\lam_i (1 - e^{-h t_{i(1)}}) - h t_{i(1)} ] \times \prod_{i=R_t+1}^{R} \exp[-\lam_i ( 1- e^{-h T} )] 
+$$
+where $\bt_{(1)}$ is the vector of times. The formula for constant $\lam$ follows immediately with the parameters $h$ and $\lam$ identifiable.
+
+### Rcode
+
+```{r eval=FALSE}
+# generates times-to-first-detection for M2s with lambda constant
+# returns a vector with no detection indicated by Tmax
+gM2sgen=function(param)
+{lam=param[1]
+h=param[2]
+tvec=matrix(0,R,1)
+for(i in 1:R)
+{n=rpois(1,lam);
+if(n==0)
+{tvec[i]=Tmax}
+if(n > 0)
+{ti=rexp(1,h*n);
+if(ti>Tmax)
+{tvec[i]=Tmax}
+if(ti<Tmax)
+{tvec[i]=ti}
+}
+}
+return(tvec)
+}
+
+# evaluates the log-likelihood for M2s with lambda constant
+gM2s=function(param)
+{lam=exp(param[1])
+h=exp(param[2])
+ti=as.matrix(subset(gdat,gdat < Tmax))
+Rt=nrow(ti) # total number of sites at which t_i1 < Tmax
+RT=R-Rt
+sumt=sum(ti)
+loglik=-RT*lam*(1-exp(-h*Tmax))+
+     Rt*log(h*lam) -lam*sum(1-exp(-h*ti))-h*sumt
+return(-loglik)
+}
+
+# generates times-to-first-detection for M2s with lambda site-dependent
+xgM2sgen=function(param)
+{b0=param[1]
+b1=param[2]
+h=param[3]
+lam=exp(b0+b1*vegHt)
+tvec=matrix(0,R,1)
+for(i in 1:R)
+  {n=rpois(1,lam[i]);
+   if(n==0)
+    {tvec[i]=Tmax}
+   if(n > 0)
+    {ti=rexp(1,h*n);
+      if(ti>Tmax)
+       {tvec[i]=Tmax}
+      if(ti<Tmax)
+      {tvec[i]=ti}
+}
+}
+return(tvec)
+}
+
+# evaluates the log-likelihood for M2s with lambda site-dependent
+xgM2s=function(param)
+{b0=param[1]
+b1=param[2]
+h=exp(param[3])
+lam=exp(b0+b1*vegHt)
+loglikt=0
+loglikT=0
+for(i in 1:R)
+{
+  if(gdatx[i] < Tmax)
+  {loglikt=loglikt+log(h*lam[i])-lam[i]+ lam[i]*exp(-h*gdatx[i])-
+       h*gdatx[i]}
+  if(gdatx[i] == Tmax)
+  {loglikT=loglikT-lam[i]*(1-exp(-h*Tmax))}
+}
+loglik=sum(loglikt+loglikT)
+return(-loglik)
+}
+```
+
+## Model M2m: Time-to-first-detection with multiple visits
+
+### Formula 
+
+For $R_t$ the number of sites and  $J_{i,t}$ the number of visits within site $i$ at which  times-to-first-detection are recorded,  
+\begin{eqnarray*}
+L_{M2m} (h, \lam_i; \bt_{(1)}) & = &  \ds \prod_{i=1}^{R_t} \bigg\{  h^{J_{i,t}}   \exp \left [-\lam_i (1-e^{-W_{i,t}} ) \right ]  \ds \sum_{k=0}^{J_{i,t}} (\lam_i e^{-W_{i,t}})^k  S(J_{i,t},k) \bigg\} \\
+& & \hspace{15mm} \times  \ds \prod_{i=R_t+1}^{R}  \exp[-\lam_i (1-e^{- h T J})] 
+\end{eqnarray*} 
+where $\bt_{(1)}$ is the vector of times, arranged conformably,  $W_{i,t} = \sum_{j=1}^{J_{i,t}} h t_{i(1)}+ (J-J_{i,t}) h T, i=1, \ldots, R_t$, and $S(J_{i,t},k)$ is a Stirling number of the second kind. The formula for constant $\lam$ follows immediately.
+
+
+### R code
+
+``` {r eval=FALSE}
+# generates times-to-first-detection for M2m with lambda constant
+gM2mgen=function(param)
+{lam=param[1]
+h=param[2]
+tmat=matrix(0,R,J)
+for(i in 1:R)
+{n=rpois(1,lam)
+if(n==0) {tmat[i,]=Tmax}
+if(n >0)
+{tvec=rexp(J,h*n)
+tvec[tvec>Tmax]<-Tmax
+tmat[i,]=tvec
+}
+}
+return(tmat)
+}
+
+# evaluates the log-likelihood for M2m with lambda constant
+gM2m=function(param)
+{lam=exp(param[1])
+h=exp(param[2])
+Jt=matrix(0,R,1)
+W=matrix(0,R,1)
+for(i in 1:R)
+{Jt[i]=length(subset(gdat[i,], gdat[i,] < Tmax))
+# note that W[i] is a sum of all times at site i
+# including those recorded as Tmax, that is ti1 >Tmax
+W[i]=sum(gdat[i,])}
+mu=lam*exp(-h*W)
+fin=matrix(0,R,1)
+for(i in 1:R)
+{
+  if(Jt[i] > 0)
+  {
+    term=0
+    for(k in 1:Jt[i])
+    {
+    term=term+(mu[i]^k)*Stirling2(Jt[i],k)}
+    fin[i]=fin[i]+log(term)
+  }
+}
+loglik=-R*lam+sum(mu)+sum(Jt)*log(h)+
+  sum(log(choose(J,Jt)))+sum(fin)
+return(-loglik)
+}
+
+# generates times-to-first-detection for M2m with lambda site-dependent
+xgM2mgen=function(param)
+{b0=param[1]
+b1=param[2]
+h=param[3]
+lam=exp(b0+b1*vegHt)
+tmat=matrix(0,R,J)
+for(i in 1:R)
+{N=rpois(1,lam[i])
+if(N==0) {tmat[i,]=Tmax}
+if(N >0)
+{tvec=rexp(J,h*N)
+tvec[tvec>Tmax]<-Tmax
+tmat[i,]=tvec
+}
+}
+return(tmat)
+}
+
+# evaluates the log-likelihood for M2m with lambda site-dependent
+xgM2m=function(param)
+{b0=param[1]
+b1=param[2]
+h=exp(param[3])
+lam=exp(b0+b1*vegHt)
+Jt=matrix(0,R,1)
+W=matrix(0,R,1)
+for(i in 1:R)
+{Jt[i]=length(subset(gdatx[i,], gdatx[i,] < Tmax))
+# note that W[i] is a sum of all times at site i
+# including those recorded as Tmax, that is ti1 >Tmax
+W[i]=sum(gdatx[i,])}
+mu=lam*exp(-h*W)
+fin=matrix(0,R,1)
+for(i in 1:R)
+{
+  if(Jt[i] > 0)
+  {
+    term=0
+    for(k in 1:Jt[i])
+    {
+    term=term+(mu[i]^k)*Stirling2(Jt[i],k)}
+    fin[i]=fin[i]+log(term)
+  }
+}
+# note that the term -lam_i (1-exp(-h W_i)) = -lam_i+[lam_i exp(-h W_i)]
+# covers all R since if Jt[i]=0 then W[i] = h*Tmax*J
+loglik=-sum(lam)+sum(mu)+sum(Jt)*log(h)+
+  sum(log(choose(J,Jt)))+sum(fin)
+return(-loglik)
+}
+```
+ 
+## Model M3s: Counts with a single visit
+
+### Formula 
+
+The distribution of counts at a given site follows a thinned Poisson. For $R$ sites,
+$$
+L_{M3s}(h,\lam_i; \by) = \prod_{i=1}^R \frac{[\lam_i (1- e^{-h T })]^{y_i} \exp
+[-\lam_i (1- e^{-h  T}) ]}{y_i!},
+$$
+where $\by =(y_1, \ldots, y_R)$ is the vector of counts. If $\lam_i$ is a constant, the unknown parameters $\lam$ and $h$ are not identifiable.
+
+
+### R code
+
+``` {r eval=FALSE}
+# generates binomial count data for M3s with lambda site-dependant
+xgM3Bsgen=function(param)
+{b0=param[1]
+b1=param[2]
+h=param[3]
+lam=exp(b0+b1*vegHt)
+p=1-exp(-h*Tmax)
+yvec=matrix(0,R,1)
+for(i in 1:R){
+  n=rpois(1,lam[i])
+  yvec[i]=rbinom(1,n,p)}
+return(yvec)
+}
+
+# evaluates the log-likelihood for M3s with lambda site-dependant
+xgM3Bs=function(param)
+{b0=param[1]
+b1=param[2]
+h=exp(param[3])
+yvec=gdatx
+lam=exp(b0+b1*vegHt)
+p=1-exp(-h*Tmax)
+loglik=sum(yvec*log(lam))+sum(yvec*log(p))-
+  sum(lam*p)-sum(log(factorial(yvec)))
+return(-loglik)
+}
+```
+
+## Model M3m: Counts with multiple visits 
+
+### Formula 
+
+For $R_1$ sites with the maximum count greater than zero, that is $y_{i,M} > 0$,
+\begin{eqnarray*}
+L_{M3m}(h,\lam_i;\by) & = &   \prod_{i=1}^{R_1} \bigg\{ \; e^{-\lam_i}  \; \left  (\frac{1-e^{-h T}}{e^{-h T}} \right )^{\sum_{i=1}^J y_{ij}} \; \left ( \lam_i  e^{- h T J} \right )^{y_{i,M}} \\
+& & \hspace{10mm} \times    \;  \hg{J-1}{J-1} 
+\bigg( 
+ \begin{array}{c}
+(y_{i,M}+1)\\ 
+(y_{i,M}-y_{ij}+1)
+\end{array}
+\bigg| \lam_i  e^{-h T J}) \bigg) \bigg\}                    \\
+& & \hspace{20mm} \times \prod_{i=R_1+1}^R \exp[-\lam_i (1 - \exp^{-h T J})]
+\end{eqnarray*}
+where $\by$ is the vector of counts, arranged conformably. The formula for constant $\lam$ follows immediately.
+
+### R code
+
+``` {r eval=FALSE}
+# generates binomial count data for model M3m with lambda constant
+gM3Bmgen=function(param)
+{lam=param[1]
+h=param[2]
+ymat=matrix(0,R,J)
+for(i in 1:R){
+  n=rpois(1,lam)
+  p=1-exp(-h*Tmax)
+  for(j in 1:J)
+  {
+  ymat[i,j]=rbinom(1,n,p)}
+}
+return(ymat)
+}
+
+# evaluates the log-likelihood for model M3m with lambda constant
+gM3Bm=function(param)
+{
+  lam=exp(param[1])
+  h=exp(param[2])
+  loglik=0
+  p=1-exp(-h*Tmax)
+  ymat=gdat
+  for(i in 1:R)
+  {
+    # set up yvec, p, lograt
+    yvec=ymat[i,]
+    lograt=sum(yvec)*log(p/(1-p))
+    #sort yvec
+    yvec=sort(yvec)
+    yij=yvec[-J]
+    yiJ=yvec[J]
+    term=sum(log(choose(yiJ,yij)))
+    # calculate hypergeometric function
+    theta=lam*(1-p)^J
+    hgfun=genhypergeo(rep(yiJ,(J-1)) + 1,yiJ - yij + 1,theta)
+    loglik=loglik-lam+lograt+yiJ*log(theta)+
+      log(hgfun)+term-log(factorial(yiJ))
+  }
+  return(-loglik)
+}
+
+
+# generates binomial count data for model M3m with lambda site-dependent
+xM3Bmgen=function(param)
+{b0=param[1]
+b1=param[2]
+lam=exp(b0+b1*vegHt)
+h=param[3]
+ymat=matrix(0,R,J)
+for(i in 1:R){
+  n=rpois(1,lam[i])
+  p=1-exp(-h*Tmax)
+  for(j in 1:J)
+  {
+  ymat[i,j]=rbinom(1,n,p)}
+}
+return(ymat)
+}
+
+# evaluates the log-likelihood for model M3m with lambda site-dependent
+xgM3Bm=function(param)
+{b0=param[1]
+b1=param[2]
+h=exp(param[3])
+lam=exp(b0+b1*vegHt)
+loglik=0
+ymat=gdatx
+for(i in 1:R)
+{
+  # set up yvec, p, lograt, theta
+  yvec=ymat[i,]
+  p=1-exp(-h*Tmax)
+  lograt=sum(yvec*log(p/(1-p)))
+  theta=lam[i]*(1-p)^J
+  # now sort yvec
+  yvec=sort(yvec)
+  yij=yvec[-J]
+  yiJ=yvec[J]
+  term=sum(log(choose(yiJ,yij)))
+  hgfun=genhypergeo(rep(yiJ,(J-1)) + 1,yiJ - yij + 1,theta)
+  # now calculate log-likelihood
+  loglik=loglik+lograt-lam[i]+yiJ*log(theta)-
+    log(factorial(yiJ))+term+log(hgfun)
+}
+return(-loglik)
+}
+```
+
+## Model M4s: Times-to-each-detection with a single visit 
+
+### Formula 
+
+For $R_t$ the number of sites at which times-to-each-detection are recorded, the likelihood for the model simplifies to yield
+$$
+L_{M4s}(h,\lam_i; \by, \bt) = \prod_{i=1}^{R_t}  h^{y_i} \lam_i^{y_i} e^{- h \sum_{d=1}^{y_i} t_{i,d}} \; 
+ \prod_{i=1}^R \exp \left [ - \lam_i (1-e^{-h T}) \right] 
+$$
+where $\by$ is the vector of counts and $\bt$ the vector of times-to-each-detection, arranged conformably. The formula for constant $\lam$ follows immediately.
+
+### R code
+
+
+``` {r eval=FALSE}
+# generates the times-to-each-detection for M4s with lambda constant
+gM4sgen=function(param)
+{
+lam=param[1]
+h=param[2]
+yt=matrix(0,R,2);
+for(i in 1:R)
+{ n=rpois(1,lam)
+if( n > 0)
+{
+  tvec=sort(rexp(n,h))
+  tvecltT=as.matrix(tvec[tvec < Tmax])
+  y=nrow(tvecltT)
+  tsum=sum(tvecltT)
+  yt[i,]=c(y,tsum)
+}
+}
+return(yt)
+}
+
+# evaluates the log-likelihood for model M4s with lambda constant
+gM4s=function(param)
+{
+lam=exp(param[1])
+h=exp(param[2])
+loglik=matrix(0,R,1)
+tvec=gdat
+for(i in 1:R)
+{y=tvec[i,1]
+tsum=tvec[i,2]
+if(y == 0)
+  {loglik[i]=loglik[i]-lam*(1-exp(-h*Tmax))}
+else
+  {loglik[i]=loglik[i]+y*log(h*lam)-lam*(1-exp(-h*Tmax))-h*tsum}
+}
+return(-sum(loglik))
+}
+
+# generates the times-to-each-detection for M4s with lambda site-dependent
+xgM4sgen=function(param)
+{
+  b0=param[1]
+  b1=param[2]
+  h=param[3]
+  lam=exp(b0+b1*vegHt)
+  yt=matrix(0,R,2);
+  for(i in 1:R)
+  { n=rpois(1,lam[i])
+  if( n > 0)
+  {
+    tvec=sort(rexp(n,h))
+    tvecltT=as.matrix(tvec[tvec < Tmax])
+    y=nrow(tvecltT)
+    tsum=sum(tvecltT)
+    yt[i,]=c(y,tsum)
+  }
+  }
+  return(yt)
+}
+
+# evaluates the log-likelihood for model M4s with lambda site-dependent
+xgM4s=function(param)
+{
+  b0=param[1]
+  b1=param[2]
+  h=exp(param[3])
+  lam=exp(b0+b1*vegHt)
+  loglik=matrix(0,R,1)
+  tvec=gdatx
+  for(i in 1:R)
+  {
+    y=tvec[i,1]
+  tsum=tvec[i,2]
+  if(y == 0)
+  {loglik[i]=loglik[i]-lam[i]*(1-exp(-h*Tmax))}
+  else
+  {loglik[i]=loglik[i]+y*log(h*lam[i])-lam[i]*(1-exp(-h*Tmax))-h*tsum}
+  }
+  return(-sum(loglik))
+}
+```
+
+## Model M4m: Times-to-each-detection with multiple visits 
+
+### Formula 
+
+For $R_t$ the number of sites at which times-to-each-detection are recorded, 
+\begin{eqnarray*}
+L_{M4m}( h,\lam_i;\by, \bt) & = &  \prod_{i=1}^{R_t} \prod_{j=1}^{J_{i,t}} \bigg[ \frac{h^{y_{ij}} \; e^{-h \sum_{d=1}^{y_{ij}} t_{i,jd}}}{\ds \left ( 1-e^{-h T} \right )^{y_{ij}}} \bigg] \times L_{M3m}(h,\lam_i; \by),
+\end{eqnarray*}
+where $\by$ is the vector of counts and $\bt$ the vector of times-to-each-detection, arranged conformably. This expression can be simplified by cancelling  the terms in $\left ( 1-e^{-h T} \right )$ to provide a computationally more efficient form, that is 
+\begin{eqnarray*}
+L_{M4m}(h,\lam_i;\by, \bt) & = &  \prod_{i=1}^{R_t} \bigg\{ \bigg( \prod_{j=1}^{J_{i,t}}  h^{y_{ij}} \; e^{-h \sum_{d=1}^{y_{ij}} t_{i,jd} } \bigg)\; e^{-\lam_{i}} \; \lam_i^{y_{i,M} } \; e^{- h T \sum_{j=1}^J (y_{i,M} -y_{ij})}  \\
+& & \hspace{-1mm} 
+   \times \hg{J-1}{J-1} 
+\bigg( 
+ \begin{array}{c}
+(y_{i,M}+1)\\ 
+(y_{i,M}-y_{ij}+1)
+\end{array}
+\bigg| \lam_i  e^{-h T J}) \bigg) \bigg\} \; \prod_{i=R_t+1}^R \exp[-\lam_i (1 - e^{-h T J})].
+\end{eqnarray*}
+The formulae for constant $\lam$ follow immediately.
+
+## R code
+
+``` {r eval=FALSE}
+
+# generates times-to-each-detection for M4m with lambda constant
+gM4mgen=function(param)
+{
+  lam=param[1]
+  h=param[2]
+  ymat=matrix(0,R,J)
+  tsmat=matrix(0,R,J)
+  for(i in 1:R)
+  {n=rpois(1,lam)
+  if(n==0){ymat[i,]=matrix(0,J,1)
+  tsmat[i,]=matrix(0,J,1)}
+  if( n > 0)
+    for(j in 1:J)
+    {
+      tvec=sort(rexp(n,h))
+      tvecltT=as.matrix(tvec[tvec < Tmax])
+      ymat[i,j]=nrow(tvecltT)
+      tsmat[i,j]=sum(tvecltT)
+    }
+  }
+  return(cbind(ymat,tsmat))
+}
+
+# evaluates the log-likelihood for model M4m with lambda constant
+gM4m=function(param)
+{ ymat=gdat[,1:J]
+  tsmat=gdat[,(J+1):(2*J)]
+  lam=exp(param[1])
+  h=exp(param[2])
+loglik=0
+for(i in 1:R)
+{
+  yvec=ymat[i,]
+  yvec=sort(yvec, decreasing=FALSE)
+  yij=yvec[-J]
+  yiJ=yvec[J]
+  tsum=tsmat[i,]
+  term1=sum(yvec)*log(h)-h*sum(tsum)
+  term2=-lam-h*sum(Tmax*(yiJ-yvec))+yiJ*log(lam)
+  term3=(J-1)*log(factorial(yiJ))-sum(log(factorial(yiJ-yij)))
+  theta=lam*exp(-h*Tmax*J)
+  hgfun=genhypergeo(rep(yiJ,(J-1)) + 1,yiJ - yij + 1,theta)
+  term4=log(hgfun)
+  loglik=loglik+term1+term2+term3+term4}
+return(-loglik)
+}
+
+# generates times-to-each-detection for M4m with lambda site-dependent
+xgM4mgen=function(param)
+{
+  b0=param[1]
+  b1=param[2]
+  h=param[3]
+  lam=exp(b0+b1*vegHt)
+  ymat=matrix(0,R,J)
+  tsmat=matrix(0,R,J)
+  for(i in 1:R)
+  { n=rpois(1,lam[i])
+  if( n > 0)
+    for(j in 1:J)
+    {
+      tvec=rexp(n,h)
+      tvecltT=as.matrix(tvec[tvec < Tmax])
+      ymat[i,j]=nrow(tvecltT)
+      tsmat[i,j]=sum(tvecltT)
+    }
+  }
+  return(cbind(ymat,tsmat))
+}
+
+
+# evaluates the log-likelihood for model M4m with lambda site-dependent
+# y_j=0 then sum of arrival times is 0
+xgM4m=function(param)
+{ ymat=gdatx[,1:J]
+  tsmat=gdatx[,(J+1):(2*J)]
+  b0=param[1]
+  b1=param[2]
+  h=exp(param[3])
+  lam=exp(b0+b1*vegHt)
+  loglik=0
+  for(i in 1:R)
+  {
+    yvec=ymat[i,]
+    tsum=tsmat[i,]
+    yvec=sort(yvec, decreasing=FALSE)
+    yij=yvec[-J]
+    yiJ=yvec[J]
+    term1=sum(yvec)*log(h)-h*sum(tsum)
+    term2=-lam[i]-h*sum(Tmax*(yiJ-yvec))+yiJ*log(lam[i])
+    term3=(J-1)*log(factorial(yiJ))-sum(log(factorial(yiJ-yij)))
+    theta=lam[i]*exp(-h*Tmax*J)
+    hgfun=genhypergeo(rep(yiJ,(J-1)) + 1,yiJ - yij + 1,theta)
+    term4=log(hgfun)
+    loglik=loglik+term1+term2+term3+term4}
+  return(-loglik)
+}
+```
+
+
+## Model M5s: Time-to-first-detection and count data with a single visit 
+
+### Formula 
+
+For $R_t$ the number of sites at which counts and times-to-first detection are recorded, 
+\begin{eqnarray*}
+L_{M5s}(h,\lam_i; \by, \bt_{(1)}) & = & \prod_{i=1}^{R_t} \bigg[ h e^{-h t_{i(1)}} (e^{-h t_{i(1)}} -e^{- h T} )^{y_i-1} \bigg] \; \prod_{i=1}^R \exp \left [ - \lam_i (1-e^{-h T}) \right]
+\end{eqnarray*}
+where $\by$ and $\bt_{(1)}$ are vectors of counts and times, arranged conformably. The formula for constant $\lam$ follows immediately.
+
+
+### R code
+
+``` {r eval=FALSE}
+
+# generates time-to-first-detection and count data for M5s with lambda constant
+gM5sgen=function(param)
+{
+  lam=param[1]
+  h=param[2]
+  yt=matrix(0,R,2);
+  for(i in 1:R)
+  {n=rpois(1,lam)
+  if( n > 0)
+    {
+    tvec=sort(rexp(n,h))
+    tvecltT=as.matrix(tvec[tvec < Tmax])
+    y=nrow(tvecltT)
+    if(y >0)
+     {t1=min(tvecltT)
+      yt[i,]=c(y,t1)}
+      }
+  }
+return(yt)
+}
+
+# evaluates the log-likelihood for model M5s with lambda constant
+gM5s=function(param)
+{
+lam=exp(param[1])
+h=exp(param[2])
+ytmat=gdat
+loglik=0
+for(i in 1:R)
+  {y=ytmat[i,1]
+  t1=ytmat[i,2]
+  if(y == 0)
+    {loglik=loglik-lam*(1-exp(-h*Tmax))}else
+    {term1=log(h)+y*log(lam)
+     term2=(y-1)*log((exp(-h*t1)-exp(-h*Tmax)))
+     term3=-lam*(1-exp(-h*Tmax))-h*t1
+     term4=-log(factorial(y-1))
+     loglik=loglik+term1+term2+term3+term4
+}
+}
+return(-loglik)
+}
+
+# generates time-to-first-detection and count data for M5s with lambda site-dependent
+xgM5sgen=function(param)
+{
+  b0=param[1]
+  b1=param[2]
+  h=param[3]
+  lam=exp(b0+b1*vegHt)
+  yt=matrix(0,R,2);
+  for(i in 1:R)
+  {n=rpois(1,lam[i])
+  if( n > 0)
+  {
+    tvec=sort(rexp(n,h))
+    tvecltT=as.matrix(tvec[tvec < Tmax])
+    y=nrow(tvecltT)
+    if(y >0)
+      {t1=min(tvecltT)
+       yt[i,]=c(y,t1)}
+     }
+  }
+  return(yt)
+}
+
+
+# evaluates the log-likelihood for M5s with lambda site-dependent
+xgM5s=function(param)
+{ ytmat=gdatx
+  b0=param[1]
+  b1=param[2]
+  h=exp(param[3])
+  lam=exp(b0+b1*vegHt)
+  loglik=0
+  for(i in 1:R)
+    {y=ytmat[i,1]
+     t1=ytmat[i,2]
+     if(y == 0)
+  {loglik=loglik-lam[i]*(1-exp(-h*Tmax))}
+     if(y >0)
+  {term1=log(h)+y*log(lam[i])
+   term2=(y-1)*log(exp(-h*t1)-exp(-h*Tmax))
+   term3=-lam[i]*(1-exp(-h*Tmax))-h*t1
+   term4=-log(factorial(y-1))
+        loglik=loglik+term1+term2+term3+term4
+       }
+     }
+  return(-loglik)
+}
+```
+## Model M5m: Time-to-first-detection and count data with a single visit 
+
+### Formula
+
+For $R_t$ the number of sites and $J_{i,t}$ the number of visits to site $i$ at which  counts and times-to-first detection are recorded,
+\begin{eqnarray*}
+L_{M5m}(h,\lam_i;\by, \bt) & = &  \prod_{i=1}^{R_t} \bigg\{  \prod_{j=1}^{J_{i,t}}  \frac{h^{y_{ij}} \; e^{-h t_{ij(1)}} (e^{-h t_{ij(1)}} -e^{- h T} )^{y_{ij}-1}}{(1- e^{-h T})^{y_{ij}}} \bigg\} \times L_{M3m}(h,\lam_i; \by)
+\end{eqnarray*}
+where $\by$  and $\bt_{(1)}$ are vectors of counts and times, arranged conformably. This expression simplifies by cancelling terms in $(1-e^{-h T})$ as for model M4m and is not presented here. The formula for constant $\lam$ follows immediately.
+
+### R code
+
+``` {r eval=FALSE}
+
+# generates time-to-first-detection and count data for M5m for lambda constant
+gM5mgen=function(param)
+{
+  lam=param[1]
+  h=param[2]
+  ymat=matrix(0,R,J)
+  t1mat=matrix(0,R,J)
+  for(i in 1:R)
+  { n=rpois(1,lam)
+  if( n > 0)
+    for(j in 1:J)
+    {
+      tvec=sort(rexp(n,h))
+      tvecltT=as.matrix(tvec[tvec < Tmax])
+      y=nrow(tvecltT)
+      if(y==0)
+      {ymat[i,j]=0
+      t1mat[i,j]=0}else
+      {ymat[i,j]=y
+      t1mat[i,j]=min(tvecltT)}
+    }
+  }
+  return(cbind(ymat,t1mat))
+}
+
+# evaluates the log-likelihood for M5m with lambda constant
+gM5m=function(param)
+{ ymat=gdat[,1:J]
+  t1mat=gdat[,(J+1):(2*J)]
+  lam=exp(param[1])
+  h=exp(param[2])
+  # all R
+  loglik=0
+  for(i in 1:R)
+  {
+    yvec=ymat[i,]
+    if(sum(yvec)==0)
+    {loglik=loglik-lam*(1-exp(-h*Tmax*J))}
+    if(sum(yvec)>0)
+    {# sort on yvec and t1
+      t1vec=t1mat[i,]
+      yt=cbind(yvec,t1vec)
+      yt=yt[order(yt[,1],decreasing=FALSE),]
+      yvec=yt[,1]
+      t1vec=yt[,2]
+      yij=yvec[-J]
+      ymax=yvec[J]
+      # terms for y[i,j] > 0 in site i
+      for(j in 1:J)
+        {y=yvec[j]
+        if(y > 0)
+        {term1=log(h)-h*t1vec[j]
+        term2=(y-1)*log((exp(-h*t1vec[j])-exp(-h*Tmax)))
+        term3=-sum(log(factorial(y-1)))
+        loglik=loglik+term1+term2+term3}
+        }
+      #terms for all J equiv to sum over n
+      term1=ymax*log(lam)
+      term2=-lam-h*Tmax*sum(ymax-yvec)
+      term3=(J-1)*log(factorial(ymax))-sum(log(factorial(ymax-yij)))
+      theta=lam*exp(-h*Tmax*J)
+      hgfun=genhypergeo(rep(ymax,(J-1)) + 1,ymax - yij + 1,theta)
+      term4=log(hgfun)
+      loglik=loglik+term1+term2+term3+term4}
+  }
+  return(-loglik)
+}
+
+# generates time-to-first-detection and count data for lambda site-dependent
+xgM5mgen=function(param)
+{
+  b0=param[1]
+  b1=param[2]
+  h=param[3]
+  lam=exp(b0+b1*vegHt)
+  ymat=matrix(0,R,J)
+  t1mat=matrix(0,R,J)
+  for(i in 1:R)
+  { n=rpois(1,lam[i])
+  if( n > 0)
+    for(j in 1:J)
+    {
+      tvec=sort(rexp(n,h))
+      tvecltT=as.matrix(tvec[tvec < Tmax])
+      y=nrow(tvecltT)
+      if(y>0)
+      {ymat[i,j]=y
+      t1mat[i,j]=min(tvecltT)}
+    }
+  }
+  return(cbind(ymat,t1mat))
+}
+
+# evaluates the log-likelihood for model M5m with lambda site-dependent
+xgM5m=function(param)
+{
+  b0=param[1]
+  b1=param[2]
+  h=exp(param[3])
+  ymat=gdatx[,1:J]
+  t1mat=gdatx[,(J+1):(2*J)]
+  lam=exp(b0+b1*vegHt)
+  loglik=0
+  for(i in 1:R)
+  {
+    yvec=ymat[i,]
+    if(sum(yvec)==0)
+    {loglik=loglik-lam[i]*(1-exp(-h*Tmax*J))}
+    if(sum(yvec)>0)
+    {# sort on yvec and t1
+      t1vec=t1mat[i,]
+      yt=cbind(yvec,t1vec)
+      yt=yt[order(yt[,1],decreasing=FALSE),]
+      yvec=yt[,1]
+      t1vec=yt[,2]
+      yij=yvec[-J]
+      ymax=yvec[J]
+      # terms for y[i,j] > 0 in site i
+      for(j in 1:J)
+        {y=yvec[j]
+        if(y > 0)
+        {term1=log(h)-h*t1vec[j]
+        term2=(y-1)*log((exp(-h*t1vec[j])-exp(-h*Tmax)))
+        term3=-sum(log(factorial(y-1)))
+        loglik=loglik+term1+term2+term3}
+        }
+      #terms for all J equiv to sum over n
+      term1=ymax*log(lam[i])
+      term2=-lam[i]-h*Tmax*sum(ymax-yvec)
+      term3=(J-1)*log(factorial(ymax))-sum(log(factorial(ymax-yij)))
+      theta=lam[i]*exp(-h*Tmax*J)
+      hgfun=genhypergeo(rep(ymax,(J-1)) + 1,ymax - yij + 1,theta)
+      term4=log(hgfun)
+      loglik=loglik+term1+term2+term3+term4}
+  }
+  return(-loglik)
+}
+```

@@ -1,0 +1,193 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+  word_document: default
+---
+# Web Appendix for the paper ``Exact Likelihoods for N-mixture models with Time-to-Detection Data"
+
+\def\blam{\mbox{\boldmath $\lambda$}}
+
+# PROGRAMS
+
+The R code provided in this section of the Web Appendix can be used to prepare programs for simulating binary, count and time-to-detection data based on the $N$-mixture models introduced in the main paper. The programs handle settings in which the abundance parameter is taken to be constant or site-dependent and the rate parameter and time search are held constant. Programs in which the rate parameter and the search time  are site- and visit-dependent are intricate and somewhat fragile for practically meaningful numbers of sites and are not included here.
+
+
+## PROGRAMS FOR A CONSTANT ABUNDANCE PARAMETER
+
+### SETTING
+
+The R code below provides details of the study setting to be included at the start of all programs for which the abundance parameter is a constant, $\lambda$.
+
+```{r eval=FALSE}
+rm(list=ls())
+library(copula)   #library for Stirling numbers of the second kind
+library(hypergeo) #library for the generalised hypergeometric function
+library(tictoc)
+tic()
+# setting
+R=100  #number of sites
+J=5    #number of visits: single J=1 OR multiple J > 1
+Tmax=3 #maximum search time
+#true parameters
+lamt = 2.     #abundance
+ht=0.4620981  #rate parameter
+# true probabilites
+1-exp(-ht*Tmax)      #P(individual detected)
+1-exp(-lamt)         #P(site occupancy)
+# starting values and matrices for the simulations
+nsim=1000.                 #number of simulations
+nprint=nsim/10             #progress printed 
+lamvec=array(0,c(nsim,1))
+hvec=array(0,c(nsim,1))
+#parameter for the function generating the data
+paramt=c(lamt,ht) 
+#starting value for the working parameter in optim with lambda > 0 and h > 0
+param0=cbind(log(lamt),log(ht)) 
+```
+
+### SIMULATION
+
+The R code below provides details of the simulation of the model for time-to-first-detection data with multiple sites, that is model M2m. For other models, only the function names $\tt{gM2mgen}$ and $\tt{gM2m}$ need to be changed. The model functions are presented in the next section. The data generated are termed, generically, $\tt{gdat}$, for all models, irrespective of the dimensions of that data and are then accessed by the $\tt{optim}$ function.
+
+```{r eval=FALSE}
+#cycle
+for(isim in 1:nsim)
+{ 
+  # generate data
+  gdat=gM2mgen(paramt)
+  # optimize
+  finopt=optim(param0,gM2m,method="BFGS")
+  lamvec[isim,]=exp(finopt$par[1])
+  hvec[isim,]=exp(finopt$par[2])
+  #counter
+  if(floor(isim/nprint)*nprint==isim)
+  {print(isim)}
+}
+```
+
+### RESULTS
+
+The R code below provides a summary of the $\tt{nsim}$ maximum likelihood estimates of the abundance parameter $\lambda$ and the rate parameter $h$ obtained by simulation.
+
+```{r eval=FALSE}
+# results for lambda
+lamt
+mean(lamvec)
+signif(sd(lamvec),5)
+summary(lamvec)
+hist(lamvec,25)
+boxplot(lamvec)
+
+# results for h
+ht
+signif(mean(hvec),4)
+signif(sd(hvec),4)
+summary(hvec)
+hist(hvec,25)
+boxplot(hvec)
+
+toc()
+
+```
+
+## PROGRAMS FOR SITE-DEPENDENT ABUNDANCE PARAMETERS
+
+### SETTING
+
+Here, for illustration purposes, the abundance parameters across the $R$ sites are generated from the distribution $\lambda=exp(\beta_{0}+\beta_{1} \mathrm{vegHt})$ where $\beta_{0}$ and $\beta_{1}$ are unknown parameters and vegHt is an independent standard normal variate. The R code otherwise follows that for constant abundance.
+
+``` {r eval=FALSE}
+rm(list=ls())
+library(copula)
+library(hypergeo)
+library(tictoc)
+tic()
+
+# seed
+set.seed(123)
+
+# setting
+R=100. #number of sites
+J=5    #number of visits
+Tmax=3 #maximum time
+
+#true parameters
+b0t =0.660878  #true intercept for log(lambda) 
+b1t =0.255413. #true slope for log(lambda)
+ht=0.4620981.  #rate parameter
+
+# simulation of the covariate vegHt over R sites 
+# hence the site-dependent abundance for the true parameters b0t and b1t
+vegHt=rnorm(R,0,1)
+hist(vegHt)
+lambda=exp(b0t+b1t*vegHt)
+mean(lambda)
+
+# true probabilites
+1-exp(-ht*Tmax)      #P(individual detected)
+1-exp(-mean(lambda)) #P(site occupancy)
+
+# starting values and matrices for the simulations
+nsim=1000
+nprint=nsim/10
+b0vec=array(0,c(nsim,1))
+b1vec=array(0,c(nsim,1))
+hvec=array(0,c(nsim,1))
+paramt=c(b0t,b1t,ht)
+```
+
+### SIMULATION
+
+
+The R code below provides details of the simulation of the model for time-to-first-detection data with multiple sites and site-dependent abundance, that is model M2m. For other models, only the function names $\tt{xgM2mgen}$ and $\tt{xgM2m}$ need to be changed. The model functions are presented in the next section. The data so generated are termed, generically, $\tt{gdatx}$, for all such models to distinguish them from the data generated for constant abundance.
+
+```{r eval=FALSE}
+#cycle
+set.seed(123)
+for(isim in 1:nsim)
+  { #generate data
+  gmatm=xgM2mgen(paramt)
+   # optimize
+  param0=c(b0t,b1t,log(ht))
+  finopt=optim(param0,xgM2m,method="BFGS")
+  b0vec[isim] =finopt$par[1] 
+  b1vec[isim] =finopt$par[2] 
+  hvec[isim]=exp(finopt$par[3])
+  #counter
+  if(floor(isim/nprint)*nprint==isim)
+  {print(isim)}
+}
+```
+
+### RESULTS
+
+The R code below provides a summary of the $\tt{nsim}$ maximum likelihood estimates of the unknown parameters defining site abundance, $\beta_0$ and $\beta_1$, and the rate parameter $h$ obtained by simulation.
+
+```{r eval=FALSE}
+# results for b0
+b0t
+signif(mean(b0vec),4)
+signif(sd(b0vec),4)
+summary(b0vec)
+hist(b0vec,25)
+boxplot(b0vec)
+
+# results for b1
+b1t
+signif(mean(b1vec),4)
+signif(sd(b1vec),4)
+summary(b1vec)
+hist(b1vec,25)
+boxplot(b1vec)
+
+# results for ht
+ht
+signif(mean(hvec),4)
+signif(sd(hvec),4)
+summary(hvec)
+hist(hvec,25)
+boxplot(hvec)
+
+toc()
+```

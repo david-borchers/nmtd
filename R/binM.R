@@ -25,12 +25,12 @@
 #' paramt=c(lamt,ht)
 #' 
 # data for Binary:M
-#' bnm=as.matrix(gBDmgen(paramt,R=Rsites,J=Jsites,Tmax=Tsearch))
+#' bnm=as.matrix(generate.binM(paramt,R=Rsites,J=Jsites,Tmax=Tsearch))
 #' str(bnm)
 #' head(bnm)
 #' 
 #' @export
-gBDmgen=function(param,R,J,Tmax)
+generate.binM=function(param,R,J,Tmax)
 {
   lam=param[1]
   h=param[2]
@@ -58,7 +58,7 @@ gBDmgen=function(param,R,J,Tmax)
 #' @param R The number of sites.
 #' @param J The number of occasions (assumed the same for all sites).
 #' @param Tmax The survey duration (assumed to be the same for all sites)
-#' @param gdat An \code{R} by \code{J} matrix of binary values, with a 1 representing
+#' @param dat An \code{R} by \code{J} matrix of binary values, with a 1 representing
 #' detection and a 0 representing no detection
 #' 
 #' @return Returns the negative log-likelihood function evaluated at the parameter values
@@ -76,20 +76,20 @@ gBDmgen=function(param,R,J,Tmax)
 #' param0=c(log(lamt),log(ht))
 #' 
 # data for Binary:M
-#' bnm=as.matrix(gBDmgen(paramt,R=Rsites,J=Jsites,Tmax=Tsearch))
+#' bnm=as.matrix(generate.binM(paramt,R=Rsites,J=Jsites,Tmax=Tsearch))
 #' # optimize
-#' finopt=optim(param0,gBDm,R=Rsites,J=Jsites,Tmax=Tsearch,gdat=bnm)
+#' finopt=optim(param0,nll.binM,R=Rsites,J=Jsites,Tmax=Tsearch,dat=bnm)
 #' finpar=finopt$par
 #' # save
 #' exp(finpar[1])
 #' exp(finpar[2])
 #' 
 #' @export
-gBDm=function(param,R,J,Tmax,gdat)
+nll.binM=function(param,R,J,Tmax,dat)
 {
   lam=exp(param[1])
   h=exp(param[2])
-  J1=rowSums(gdat) # number of detections at the R sites
+  J1=rowSums(dat) # number of detections at the R sites
   J0=J-J1
   loglik=matrix(0,R,1)
   for(i in 1:R)

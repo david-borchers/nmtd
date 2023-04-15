@@ -13,7 +13,7 @@ Altwegg, R., Borchers, D.L. and Haines, L.M. 2023 Exact Likelihoods for N-mixtur
 with Time-to-Detection Data. ANZJS.
 }
 \author{
-Linda Haines.
+Linda Haines, David Borchers
 }
 \keyword{N-mixture,}
 \keyword{Time}
