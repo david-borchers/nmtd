@@ -3,8 +3,9 @@ Type: Package
 Title: Exact Likelihoods for N-mixture models with Time-to-Detection Data
 Version: 1.0
 Date: 2023-03-27
-Author: Linda Haines
-Maintainer: Linda Haines <dlb@st-andrews.ac.uk>
+Author: Linda Haines and David Borchers
+Maintainer: Linda Haines <linda.haines@uct.ac.za>
 Description: Functions for simulating and fitting Time To Detection N-mixture models
+License: GPL (>= 2)
 Encoding: UTF-8
 RoxygenNote: 7.2.0

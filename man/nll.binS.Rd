@@ -8,9 +8,9 @@ on a scalar covariate.}
 nll.binS(param, R, J, Tmax, dat, covar)
 }
 \arguments{
-\item{param}{A vector comprised of parameters \eqn{b_0}{b0}, \eqn{b_1}{b1}, and the log
-of the detection hazard (in that order), where the log of the Poisson rate lambda is equal to 
-\eqn{b_0+b_1x}{b0+b1*x} and \eqn{x}{x} is the coaviate \code{covar}.}
+\item{param}{A vector comprised of parameters \eqn{b_0}{b0}, \eqn{b_1}{b1}, 
+and the log of the detection hazard (in that order), where the log of the Poisson rate 
+lambda is equal to \eqn{b_0+b_1x}{b0+b1*x} and \eqn{x}{x} is the coaviate \code{covar}.}
 
 \item{R}{The number of sites.}
 
@@ -29,29 +29,44 @@ Returns the negative log-likelihood function evaluated at the parameter values
 passed in \code{param}.
 }
 \description{
-Generates Poisson random variables for each of the \code{R} sites, corresponding to the 
-number of animals in each site. Then generates Bernoulli random variables for each of 
-\code{J} occasions that each site is surveyed, assuming a constant hazard of detection 
-for each animal.
+Evaluates the negeative log-likelihood for model Binary:S, assuming that lambda 
+depends on a covariate \code{covar} that is site-dependent, 
+given initial parameter estimates and binary data from a multiple-occasion survey.
 }
 \examples{
-###### NOT YET UPDATED #########
-# setting
-Rsites=100  #number of sites
-Jsites=5    #multiple visits
+Rsites=100. #number of sites
+Jsites=5    #number of visits
 Tsearch=3 #maximum time
-#true parameters
-lamt = 2
-ht=0.4620981
-paramt=c(lamt,ht)
-param0=c(log(lamt),log(ht))
 
-bnm=as.matrix(generate.binM(paramt,R=Rsites,J=Jsites,Tmax=Tsearch))
+#true parameters
+b0t =0.660878  #true intercept for log(lambda) 
+b1t =0.255413 #true slope for log(lambda)
+ht=0.4620981  #rate parameter
+
+# simulation of the covariate vegHt over R sites 
+# hence the site-dependent abundance for the true parameters b0t and b1t
+set.seed(123) # for reprodicibility
+x=rnorm(R,0,1)
+lambda=exp(b0t+b1t*x)
+mean(lambda)
+
+# true probabilites
+1-exp(-ht*Tmax)      #P(individual detected)
+1-exp(-mean(lambda)) #P(site occupancy)
+paramt=c(b0t,b1t,ht)
+
+# data for Binary:S
+bns=as.matrix(generate.binS(paramt,R=Rsites,J=Jsites,Tmax=Tsearch,covar=x))
+
+init.paramt=c(b0t, b1t, log(ht))
+nll = nll.binS(param=init.paramt, R=Rsites, J=Jsites, Tmax=Tsearch,dat=bns, covar=x)
+nll
+
 # optimize
-finopt=optim(param0,nll.binM,R=Rsites,J=Jsites,Tmax=Tsearch,dat=bnm)
-finpar=finopt$par
-# save
-exp(finpar[1])
-exp(finpar[2])
+fit.binS=optim(init.paramt,nll.binS,R=Rsites,J=Jsites,Tmax=Tsearch,dat=bns,covar=x)
+estpar.binS=fit.binS$par
+# compare estimates and true parameters
+c(estpar.binS[1:2],exp(estpar.binS[3]))
+paramt 
 
 }

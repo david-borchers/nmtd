@@ -2,7 +2,7 @@
 % Please edit documentation in R/binS.R
 \name{generate.binS}
 \alias{generate.binS}
-\title{Generates binary data for model Binary:M with lambda depending 
+\title{Generates binary data for model Binary:S with lambda depending 
 on a scalar covariate.}
 \usage{
 generate.binS(param, R, J, Tmax, covar)
@@ -16,8 +16,8 @@ generate.binS(param, R, J, Tmax, covar)
 
 \item{Tmax}{The survey duration (assumed to be the same for all sites)}
 
-\item{covar}{A (scalar) covariate on which the hazard depends linearly (assumed to be 
-the same for all sites).}
+\item{covar}{A vector covariate of length \code{R} on which the hazard depends 
+linearly (assumed to be the same for all occasions).}
 }
 \value{
 Returns an \code{R} by \code{J} matrix of binary values, with a 1 representing
@@ -30,18 +30,30 @@ number of animals in each site. Then generates Bernoulli random variables for ea
 for each animal.
 }
 \examples{
-###### NOT YET UPDATED #########
-# setting
-Rsites=100  #number of sites
-Jsites=5    #multiple visits
+Rsites=100. #number of sites
+Jsites=5    #number of visits
 Tsearch=3 #maximum time
-#true parameters
-lamt = 2
-ht=0.4620981
-paramt=c(lamt,ht)
 
-bnm=as.matrix(generate.binM(paramt,R=Rsites,J=Jsites,Tmax=Tsearch))
-str(bnm)
-head(bnm)
+#true parameters
+b0t =0.660878  #true intercept for log(lambda) 
+b1t =0.255413 #true slope for log(lambda)
+ht=0.4620981  #rate parameter
+
+# simulation of the covariate vegHt over R sites 
+# hence the site-dependent abundance for the true parameters b0t and b1t
+set.seed(123) # for reprodicibility
+x=rnorm(R,0,1)
+lambda=exp(b0t+b1t*x)
+mean(lambda)
+
+# true probabilites
+1-exp(-ht*Tmax)      #P(individual detected)
+1-exp(-mean(lambda)) #P(site occupancy)
+paramt=c(b0t, b1t,ht)
+
+# data for Binary:S
+bns=as.matrix(generate.binS(paramt,R=Rsites,J=Jsites,Tmax=Tsearch,covar=x))
+str(bns)
+head(bns)
 
 }
