@@ -1,18 +1,21 @@
 #' @title Generates binary data for model Binary:S with lambda depending 
-#' on a scalar covariate.
+#' on a covariate.
 #'
 #' @description
 #' Generates Poisson random variables for each of the \code{R} sites, corresponding to the 
-#' number of animals in each site. Then generates Bernoulli random variables for each of 
+#' number of animals in each site and depending on the covariate value attached to the site. 
+#' Then generates Bernoulli random variables for each of 
 #' \code{J} occasions that each site is surveyed, assuming a constant hazard of detection 
 #' for each animal. 
 #'
-#' @param param A vector comprised of the Poisson rate lambda, and the detection hazard, h.
+#' @param param A vector comprised of parameters \eqn{b_0}{b0}, \eqn{b_1}{b1}, 
+#' and the log of the detection hazard (in that order), where the log of the Poisson rate 
+#' lambda is equal to \eqn{b_0+b_1x}{b0+b1*x} and \eqn{x}{x} is the coaviate \code{covar}.
 #' @param R The number of sites.
 #' @param J The number of occasions (assumed the same for all sites).
 #' @param Tmax The survey duration (assumed to be the same for all sites)
-#' @param covar A vector covariate of length \code{R} on which the hazard depends 
-#' linearly (assumed to be the same for all occasions).
+#' @param covar A vector covariate of length \code{R} on which the expected number of 
+#' animals in the site depends linearly (assumed to be the same for all occasions).
 #' 
 #' @return Returns an \code{R} by \code{J} matrix of binary values, with a 1 representing
 #' detection and a 0 representing no detection.
@@ -61,7 +64,7 @@ generate.binS=function(param,R,J,Tmax,covar)
 }
 
 #' @title Evaluates the negeative log-likelihood for model Binary:S with lambda depending 
-#' on a scalar covariate.
+#' on a covariate.
 #'
 #' @description
 #' Evaluates the negeative log-likelihood for model Binary:S, assuming that lambda 
@@ -76,11 +79,11 @@ generate.binS=function(param,R,J,Tmax,covar)
 #' @param Tmax The survey duration (assumed to be the same for all sites)
 #' @param dat An \code{R} by \code{J} matrix of binary values, with a 1 representing
 #' detection and a 0 representing no detection
-#' @param covar A (scalar) covariate on which the hazard depends linearly (assumed to be 
-#' the same for all sites).
+#' @param covar A vector covariate of length \code{R} on which the expected number of 
+#' animals in the site depends linearly (assumed to be the same for all occasions).
 #' 
-#' @return Returns the negative log-likelihood function evaluated at the parameter values
-#' passed in \code{param}.
+#' @return Returns the negative log-likelihood function evaluated for model Binary:M at 
+#' the parameter values passed in \code{param}.
 #' 
 #' @examples 
 #' Rsites=100. #number of sites
@@ -92,7 +95,7 @@ generate.binS=function(param,R,J,Tmax,covar)
 #' b1t =0.255413 #true slope for log(lambda)
 #' ht=0.4620981  #rate parameter
 #' 
-#' # simulation of the covariate vegHt over R sites 
+#' # simulation of the covariate x over R sites 
 #' # hence the site-dependent abundance for the true parameters b0t and b1t
 #' set.seed(123) # for reprodicibility
 #' x=rnorm(R,0,1)

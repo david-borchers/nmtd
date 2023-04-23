@@ -3,7 +3,7 @@
 \name{nll.binS}
 \alias{nll.binS}
 \title{Evaluates the negeative log-likelihood for model Binary:S with lambda depending 
-on a scalar covariate.}
+on a covariate.}
 \usage{
 nll.binS(param, R, J, Tmax, dat, covar)
 }
@@ -21,12 +21,12 @@ lambda is equal to \eqn{b_0+b_1x}{b0+b1*x} and \eqn{x}{x} is the coaviate \code{
 \item{dat}{An \code{R} by \code{J} matrix of binary values, with a 1 representing
 detection and a 0 representing no detection}
 
-\item{covar}{A (scalar) covariate on which the hazard depends linearly (assumed to be 
-the same for all sites).}
+\item{covar}{A vector covariate of length \code{R} on which the expected number of 
+animals in the site depends linearly (assumed to be the same for all occasions).}
 }
 \value{
-Returns the negative log-likelihood function evaluated at the parameter values
-passed in \code{param}.
+Returns the negative log-likelihood function evaluated for model Binary:M at 
+the parameter values passed in \code{param}.
 }
 \description{
 Evaluates the negeative log-likelihood for model Binary:S, assuming that lambda 
@@ -43,7 +43,7 @@ b0t =0.660878  #true intercept for log(lambda)
 b1t =0.255413 #true slope for log(lambda)
 ht=0.4620981  #rate parameter
 
-# simulation of the covariate vegHt over R sites 
+# simulation of the covariate x over R sites 
 # hence the site-dependent abundance for the true parameters b0t and b1t
 set.seed(123) # for reprodicibility
 x=rnorm(R,0,1)
