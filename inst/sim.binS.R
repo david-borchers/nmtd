@@ -1,5 +1,4 @@
 Rsites=100 #number of sites
-Jsites=5    #number of visits
 Tsearch=3 #maximum time
 
 #true parameters
@@ -20,22 +19,22 @@ mean(lambda)
 paramt=c(b0t, b1t,ht)
 
 # data for Binary:S
-bns=as.matrix(generate.binS(paramt,R=Rsites,J=Jsites,Tmax=Tsearch,covar=x))
+bns=as.matrix(generate.binScov(paramt,R=Rsites,Tmax=Tsearch,covar=x))
 
 init.paramt=c(b0t, b1t, log(ht))
-nll = nll.binS(param=init.paramt, R=Rsites, J=Jsites, Tmax=Tsearch,dat=bns, covar=x)
+nll = nll.binScov(param=init.paramt, R=Rsites, Tmax=Tsearch,dat=bns, covar=x)
 nll
-fit.binS=optim(init.paramt,nll.binS,R=Rsites,J=Jsites,Tmax=Tsearch,dat=bns,covar=x)
-estpar.binS=fit.binS$par
-c(estpar.binS[1:2],exp(estpar.binS[3])); paramt # compare estimates and true parameters
+fit.binScov=optim(init.paramt,nll.binScov,R=Rsites,Tmax=Tsearch,dat=bns,covar=x)
+estpar.binScov=fit.binScov$par
+c(estpar.binScov[1:2],exp(estpar.binScov[3])); paramt # compare estimates and true parameters
 
 # Do some simulations to check:
 nsim = 1000
 simest = matrix(rep(NA,nsim*3),nrow=nsim)
 for(i in 1:nsim) {
-  bns=as.matrix(generate.binS(paramt,R=Rsites,J=Jsites,Tmax=Tsearch,covar=x))
-  simfit.binS=optim(init.paramt,nll.binS,R=Rsites,J=Jsites,Tmax=Tsearch,dat=bns,covar=x)
-  simest[i,] = simfit.binS$par
+  bns=as.matrix(generate.binScov(paramt,R=Rsites,Tmax=Tsearch,covar=x))
+  simfit.binScov=optim(init.paramt,nll.binScov,R=Rsites,Tmax=Tsearch,dat=bns,covar=x)
+  simest[i,] = simfit.binScov$par
 }
 parest.mean = c(mean(simest[,1]), mean(simest[,2]), mean(exp(simest[,3])))
 parest.mean; paramt
