@@ -4,25 +4,22 @@
 #' @description
 #' Generates Poisson random variables for each of the \code{R} sites, corresponding to the 
 #' number of animals in each site and depending on the covariate value attached to the site. 
-#' Then generates Bernoulli random variables for each of 
-#' \code{J} occasions that each site is surveyed, assuming a constant hazard of detection 
-#' for each animal. 
+#' Then generates Bernoulli random variables for each site, assuming a constant hazard of 
+#' detection for each animal. 
 #'
 #' @param param A vector comprised of parameters \eqn{b_0}{b0}, \eqn{b_1}{b1}, 
-#' and the log of the detection hazard (in that order), where the log of the Poisson rate 
-#' lambda is equal to \eqn{b_0+b_1x}{b0+b1*x} and \eqn{x}{x} is the coaviate \code{covar}.
+#' and the log of the detection hazard \eqn{h}{h} (in that order), where the log of the Poisson rate 
+#' lambda is equal to \eqn{b_0+b_1x}{b0+b1*x} and \eqn{x}{x} is the covariate \code{covar}.
 #' @param R The number of sites.
-#' @param J The number of occasions (assumed the same for all sites).
 #' @param Tmax The survey duration (assumed to be the same for all sites)
 #' @param covar A vector covariate of length \code{R} on which the expected number of 
 #' animals in the site depends linearly (assumed to be the same for all occasions).
 #' 
-#' @return Returns an \code{R} by \code{J} matrix of binary values, with a 1 representing
+#' @return Returns an \code{R} by 1 matrix of binary values, with a 1 representing
 #' detection and a 0 representing no detection.
 #' 
 #' @examples 
 #' Rsites=100. #number of sites
-#' Jsites=5    #number of visits
 #' Tsearch=3 #maximum time
 #' 
 #' #true parameters
@@ -43,12 +40,12 @@
 #' paramt=c(b0t, b1t,ht)
 #' 
 #' # data for Binary:S
-#' bns=as.matrix(generate.binS(paramt,R=Rsites,J=Jsites,Tmax=Tsearch,covar=x))
+#' bns=as.matrix(generate.binScov(paramt,R=Rsites,Tmax=Tsearch,covar=x))
 #' str(bns)
 #' head(bns)
 #' 
 #' @export
-generate.binS=function(param,R,J,Tmax,covar)
+generate.binScov=function(param,R,Tmax,covar)
 {
   b0=param[1]
   b1=param[2]
@@ -72,12 +69,11 @@ generate.binS=function(param,R,J,Tmax,covar)
 #' given initial parameter estimates and binary data from a multiple-occasion survey.
 #'
 #' @param param A vector comprised of parameters \eqn{b_0}{b0}, \eqn{b_1}{b1}, 
-#' and the log of the detection hazard (in that order), where the log of the Poisson rate 
+#' and the log of the detection hazard \eqn{h}{h} (in that order), where the log of the Poisson rate 
 #' lambda is equal to \eqn{b_0+b_1x}{b0+b1*x} and \eqn{x}{x} is the coaviate \code{covar}.
 #' @param R The number of sites.
-#' @param J The number of occasions (assumed the same for all sites).
 #' @param Tmax The survey duration (assumed to be the same for all sites)
-#' @param dat An \code{R} by \code{J} matrix of binary values, with a 1 representing
+#' @param dat An \code{R} by 1 matrix of binary values, with a 1 representing
 #' detection and a 0 representing no detection
 #' @param covar A vector covariate of length \code{R} on which the expected number of 
 #' animals in the site depends linearly (assumed to be the same for all occasions).
@@ -87,7 +83,6 @@ generate.binS=function(param,R,J,Tmax,covar)
 #' 
 #' @examples 
 #' Rsites=100. #number of sites
-#' Jsites=5    #number of visits
 #' Tsearch=3 #maximum time
 #' 
 #' #true parameters
@@ -108,21 +103,21 @@ generate.binS=function(param,R,J,Tmax,covar)
 #' paramt=c(b0t,b1t,ht)
 #' 
 #' # data for Binary:S
-#' bns=as.matrix(generate.binS(paramt,R=Rsites,J=Jsites,Tmax=Tsearch,covar=x))
+#' bns=as.matrix(generate.binScov(paramt,R=Rsites,Tmax=Tsearch,covar=x))
 #' 
 #' init.paramt=c(b0t, b1t, log(ht))
-#' nll = nll.binS(param=init.paramt, R=Rsites, J=Jsites, Tmax=Tsearch,dat=bns, covar=x)
+#' nll = nll.binScov(param=init.paramt, R=Rsites, Tmax=Tsearch,dat=bns, covar=x)
 #' nll
 #' 
 #' # optimize
-#' fit.binS=optim(init.paramt,nll.binS,R=Rsites,J=Jsites,Tmax=Tsearch,dat=bns,covar=x)
-#' estpar.binS=fit.binS$par
+#' fit.binScov=optim(init.paramt,nll.binScov,R=Rsites,Tmax=Tsearch,dat=bns,covar=x)
+#' estpar.binScov=fit.binScov$par
 #' # compare estimates and true parameters
-#' c(estpar.binS[1:2],exp(estpar.binS[3]))
+#' c(estpar.binScov[1:2],exp(estpar.binScov[3]))
 #' paramt 
 #' 
 #' @export
-nll.binS=function(param,R,J,Tmax,dat,covar)
+nll.binScov=function(param,R,Tmax,dat,covar)
 {
   b0=param[1]
   b1=param[2]
