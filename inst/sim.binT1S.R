@@ -1,33 +1,40 @@
 # ======================== WithOUT Covariate =========================
-Rsites=100  #number of sites
-Jsites=5    #multiple visits
+Rsites=100. #number of sites
 Tsearch=3 #maximum time
 
+#true parameters
 #true parameters
 lamt = 2
 ht=0.4620981
 paramt=c(lamt,ht)
+
+# data for BinaryT1:S
+bns=as.matrix(generate.binT1S(paramt,R=Rsites,Tmax=Tsearch))
+
 init.paramt=c(log(lamt),log(ht))
+nll = nll.binT1S(param=init.paramt, R=Rsites, Tmax=Tsearch,dat=bns)
+nll
 
-# data for Binary:M
-set.seed(123) # for reproducibility
-bnm=as.matrix(generate.binM(paramt,R=Rsites,J=Jsites,Tmax=Tsearch))
 # optimize
-fit.binM=optim(init.paramt,nll.binM,R=Rsites,J=Jsites,Tmax=Tsearch,dat=bnm)
-estpar.binM=fit.binM$par
-exp(estpar.binM); paramt # compare estimates and true parameters
-
+set.seed(123) # for reproducibility
+bn1s=as.matrix(generate.binT1S(paramt,R=Rsites,Tmax=Tsearch))
+# optimize
+fit.bin1S=optim(init.paramt,nll.binT1S,R=Rsites,Tmax=Tsearch,dat=bn1s)
+estpar.bin1S=fit.bin1S$par
+# compare estimates and true parameters
+exp(estpar.bin1S)
+paramt 
 
 # Do some simulations to check:
+set.seed(123) # for reprodicibility
 nsim = 1000
-npar = 3
-simest = matrix(rep(NA,nsim*npar),nrow=nsim)
+simest = matrix(rep(NA,nsim*2),nrow=nsim)
 for(i in 1:nsim) {
-  bns=as.matrix(generate.binM(paramt,R=Rsites,J=Jsites,Tmax=Tsearch))
-  simfit.binM=optim(init.paramt,nll.binM,R=Rsites,J=Jsites,Tmax=Tsearch,dat=bns)
-  simest[i,] = simfit.binM$par
+  bns=as.matrix(generate.binT1S(paramt,R=Rsites,Tmax=Tsearch))
+  simfit.binT1S=optim(init.paramt,nll.binT1S,R=Rsites,Tmax=Tsearch,dat=bns)
+  simest[i,] = simfit.binT1S$par
 }
-parest.mean = c(mean(exp(simest[,1])), mean(exp(simest[,2])))
+parest.mean = c(mean(exp(simest[1])), mean(exp(simest[2])))
 parest.mean; paramt
 
 # some plots
@@ -53,9 +60,11 @@ boxplot(exp(simest[,2]),main="lamt")
 abline(h=ht,col="red")
 
 
+
+
+
 # ======================== With Covariate =========================
-Rsites=100. #number of sites
-Jsites=5    #number of visits
+Rsites=100 #number of sites
 Tsearch=3 #maximum time
 
 #true parameters
@@ -63,7 +72,7 @@ b0t =0.660878  #true intercept for log(lambda)
 b1t =0.255413 #true slope for log(lambda)
 ht=0.4620981  #rate parameter
 
-# simulation of the covariate x over R sites 
+# simulation of the covariate vegHt over R sites 
 # hence the site-dependent abundance for the true parameters b0t and b1t
 set.seed(123) # for reprodicibility
 x=rnorm(R,0,1)
@@ -75,69 +84,61 @@ mean(lambda)
 1-exp(-mean(lambda)) #P(site occupancy)
 paramt=c(b0t, b1t,ht)
 
-# data for Binary:M
-bnm=as.matrix(generate.binMcov(paramt,R=Rsites,J=Jsites,Tmax=Tsearch,covar=x))
+# data for BinaryT1:Scov
+bns=as.matrix(generate.binT1Scov(paramt,R=Rsites,Tmax=Tsearch,covar=x))
 
 init.paramt=c(b0t, b1t, log(ht))
-nll = nll.binMcov(param=init.paramt, R=Rsites, J=Jsites, Tmax=Tsearch,dat=bns, covar=x)
+nll = nll.binT1Scov(param=init.paramt, R=Rsites, Tmax=Tsearch,dat=bns, covar=x)
 nll
-
-# optimize
-fit.binMcov=optim(init.paramt,nll.binMcov,R=Rsites,J=Jsites,Tmax=Tsearch,dat=bns,covar=x)
-estpar.binMcov=fit.binMcov$par
-# compare estimates and true parameters
-c(estpar.binMcov[1:2],exp(estpar.binMcov[3]))
-paramt 
-
-
+fit.binT1Scov=optim(init.paramt,nll.binT1Scov,R=Rsites,Tmax=Tsearch,dat=bns,covar=x)
+estpar.binT1Scov=fit.binT1Scov$par
+c(estpar.binT1Scov[1:2],exp(estpar.binT1Scov[3])); paramt # compare estimates and true parameters
 
 # Do some simulations to check:
+set.seed(123) # for reprodicibility
 nsim = 1000
-npar = 3
-simest = matrix(rep(NA,nsim*npar),nrow=nsim)
+simest = matrix(rep(NA,nsim*3),nrow=nsim)
 for(i in 1:nsim) {
-  bnm=as.matrix(generate.binMcov(paramt,R=Rsites,J=Jsites,Tmax=Tsearch,covar=x))
-  simfit.binMcov=optim(init.paramt,nll.binMcov,R=Rsites,J=Jsites,Tmax=Tsearch,dat=bnm,covar=x)
-  simest[i,] = simfit.binMcov$par
+  bns=as.matrix(generate.binT1Scov(paramt,R=Rsites,Tmax=Tsearch,covar=x))
+  simfit.binT1Scov=optim(init.paramt,nll.binT1Scov,R=Rsites,Tmax=Tsearch,dat=bns,covar=x)
+  simest[i,] = simfit.binT1Scov$par
 }
 parest.mean = c(mean(simest[,1]), mean(simest[,2]), mean(exp(simest[,3])))
 parest.mean; paramt
 
 # some plots
-# ----------
-# results for b0t
 par(mfrow=c(1,2))
-# results for lamt
+# results for b0
+b0t
 signif(mean(simest[,1]),4)
 signif(sd(simest[,1]),4)
 summary(simest[,1])
-hist(simest[,1],25,main="b0t")
+hist(simest[,1],25,main="b0")
 abline(v=mean(simest[,1]))
 abline(v=b0t,col="red")
-boxplot(simest[,1],main="h")
+boxplot(simest[,1],main="b0")
 abline(h=b0t,col="red")
 
-# results for b2t
-par(mfrow=c(1,2))
-# results for lamt
+# results for b1
+b1t
 signif(mean(simest[,2]),4)
 signif(sd(simest[,2]),4)
 summary(simest[,2])
-hist(simest[,2],25,main="b1t")
+hist(simest[,2],25,main="b1")
 abline(v=mean(simest[,2]))
 abline(v=b1t,col="red")
-boxplot(simest[,2],main="h")
+boxplot(simest[,2],main="b1")
 abline(h=b1t,col="red")
 
-
 # results for ht
+ht
 signif(mean(exp(simest[,3])),4)
 signif(sd(exp(simest[,3])),4)
 summary(exp(simest[,3]))
 hist(exp(simest[,3]),25,main="h")
 abline(v=mean(exp(simest[,3])))
 abline(v=ht,col="red")
-boxplot(exp(simest[,3]),main="lamt")
+boxplot(exp(simest[,3]),main="h")
 abline(h=ht,col="red")
 
 
@@ -157,3 +158,4 @@ lines(xs,lcl.lambda,lty=2)
 lines(xs,ucl.lambda,lty=2)
 lambda.true = exp(b0t + b1t*xs)
 lines(xs,lambda.true,col="red")
+

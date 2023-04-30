@@ -29,6 +29,7 @@ estpar.binScov=fit.binScov$par
 c(estpar.binScov[1:2],exp(estpar.binScov[3])); paramt # compare estimates and true parameters
 
 # Do some simulations to check:
+set.seed(123) # for reprodicibility
 nsim = 1000
 simest = matrix(rep(NA,nsim*3),nrow=nsim)
 for(i in 1:nsim) {
@@ -73,4 +74,23 @@ abline(v=mean(exp(simest[,3])))
 abline(v=ht,col="red")
 boxplot(exp(simest[,3]),main="h")
 abline(h=ht,col="red")
+
+
+
+# results for lambdas
+nx = 100
+xs = seq(min(x),max(x),length=nx)
+lambda.est = matrix(rep(NA,nsim*nx),nrow=nsim)
+for(i in 1:nsim) lambda.est[i,] = exp(simest[i,1] + simest[i,2]*xs)
+mean.lambda.est = apply(lambda.est,2,mean)
+lcl.lambda = apply(lambda.est,2,quantile,probs=0.025)
+ucl.lambda = apply(lambda.est,2,quantile,probs=0.975)
+ylim = range(lambda.est)
+plot(xs,lambda.est[1,],type="l",col="gray",xlab="Covariate",ylab="Lambda",ylim=ylim)
+for(i in 2:nsim) lines(xs,lambda.est[i,],col="gray")
+lines(xs,mean.lambda.est)
+lines(xs,lcl.lambda,lty=2)
+lines(xs,ucl.lambda,lty=2)
+lambda.true = exp(b0t + b1t*xs)
+lines(xs,lambda.true,col="red")
 
