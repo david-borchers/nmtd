@@ -153,7 +153,7 @@ nll.binT1S=function(param,R,Tmax,dat)
 #' 1-exp(-mean(lambda)) #P(site occupancy)
 #' paramt=c(b0t, b1t,ht)
 #' 
-#' # data for Binary:S
+#' # data for BinaryT1:Scov
 #' bns=as.matrix(generate.binT1Scov(paramt,R=Rsites,Tmax=Tsearch,covar=x))
 #' str(bns)
 #' head(bns)
@@ -224,7 +224,7 @@ generate.binT1Scov=function(param,R,Tmax,covar)
 #' 1-exp(-mean(lambda)) #P(site occupancy)
 #' paramt=c(b0t,b1t,ht)
 #' 
-#' # data for Binary:S
+#' # data for BinaryT1:Scov
 #' bns=as.matrix(generate.binT1Scov(paramt,R=Rsites,Tmax=Tsearch,covar=x))
 #' 
 #' init.paramt=c(b0t, b1t, log(ht))
