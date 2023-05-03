@@ -1,11 +1,11 @@
-#' @title Generates count data for model Count:S with lambda depending 
+#' @title Generates binomial count data for model Count:S with lambda depending 
 #' on a covariate.
 #'
 #' @description
 #' Generates Poisson random variables for each of the \code{R} sites, corresponding to the 
 #' number of animals in each site and depending on the covariate value attached to the site. 
-#' Then generates Poisson random variables for each site, assuming a constant hazard of 
-#' detection for each animal. 
+#' Then generates binomial random variables for each site, given the number of animals present, 
+#' assuming a constant hazard of detection for each animal. 
 #'
 #' @param param A vector comprised of parameters \eqn{b_0}{b0}, \eqn{b_1}{b1}, 
 #' and the log of the detection hazard \eqn{h}{h} (in that order), where the log of the Poisson rate 
@@ -58,11 +58,11 @@ generate.countScov=function(param, R, Tmax, covar)
   return(yvec)
 }
 
-#' @title Evaluates the negeative log-likelihood for model Binary:S with lambda depending 
+#' @title Evaluates the negeative log-likelihood for model Count:S with lambda depending 
 #' on a covariate.
 #'
 #' @description
-#' Evaluates the negeative log-likelihood for model Binary:S, assuming that lambda 
+#' Evaluates the negeative log-likelihood for model Count:S, assuming that lambda 
 #' depends on a covariate \code{covar} that is site-dependent, 
 #' given initial parameter estimates and binary data from a multiple-occasion survey.
 #'
