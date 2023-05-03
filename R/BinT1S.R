@@ -1,4 +1,4 @@
-#' @title Generates binary data for model BinaryT1:S with constant lambda.
+#' @title Generates time to first detection data for model BinaryT1:S with constant lambda.
 #'
 #' @description
 #' Generates Poisson random variables \eqn{n}{n} for each of the \code{R} sites, corresponding to the 
@@ -12,7 +12,7 @@
 #' @param Tmax The survey duration (assumed to be the same for all sites)
 #' 
 #' @return Returns an \code{R} by 1 matrix containing the times of
-#' first detections in each site, with a time equal to \code{Tmax} indication no detection.
+#' first detections in each site, with a time equal to \code{Tmax} indicating no detection.
 #' 
 #' @examples 
 #' Rsites=100. #number of sites
@@ -112,7 +112,7 @@ nll.binT1S=function(param,R,Tmax,dat)
   return(-loglik)
 }
 
-#' @title Generates binary data for model BinaryT1:S with lambda depending 
+#' @title Generates time to first detection data for model BinaryT1:S with lambda depending 
 #' on a covariate.
 #'
 #' @description
@@ -130,7 +130,7 @@ nll.binT1S=function(param,R,Tmax,dat)
 #' animals in the site depends linearly (assumed to be the same for all occasions).
 #' 
 #' @return Returns an \code{R} by 1 matrix containing the times of first detections in 
-#' each site, with a time equal to \code{Tmax} indication no detection.
+#' each site, with a time equal to \code{Tmax} indicating no detection.
 #' 
 #' @examples 
 #' Rsites=100. #number of sites

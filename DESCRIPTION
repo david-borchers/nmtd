@@ -7,5 +7,7 @@ Author: Linda Haines and David Borchers
 Maintainer: Linda Haines <linda.haines@uct.ac.za>
 Description: Functions for simulating and fitting Time To Detection N-mixture models
 License: GPL (>= 2)
+Depends: copula (>= 1.1.2)
+LinkingTo: copula
 Encoding: UTF-8
 RoxygenNote: 7.2.0
