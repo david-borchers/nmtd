@@ -1,10 +1,10 @@
-#' @title Generates binary data for model Binary:S with lambda depending 
+#' @title Generates count data for model Count:S with lambda depending 
 #' on a covariate.
 #'
 #' @description
 #' Generates Poisson random variables for each of the \code{R} sites, corresponding to the 
 #' number of animals in each site and depending on the covariate value attached to the site. 
-#' Then generates Bernoulli random variables for each site, assuming a constant hazard of 
+#' Then generates Poisson random variables for each site, assuming a constant hazard of 
 #' detection for each animal. 
 #'
 #' @param param A vector comprised of parameters \eqn{b_0}{b0}, \eqn{b_1}{b1}, 
@@ -15,8 +15,7 @@
 #' @param covar A vector covariate of length \code{R} on which the expected number of 
 #' animals in the site depends linearly (assumed to be the same for all occasions).
 #' 
-#' @return Returns an \code{R} by 1 matrix of binary values, with a 1 representing
-#' detection and a 0 representing no detection.
+#' @return Returns an \code{R} by 1 matrix of count values.
 #' 
 #' @examples 
 #' Rsites=100. #number of sites
@@ -40,24 +39,23 @@
 #' paramt=c(b0t, b1t,ht)
 #' 
 #' # data for Binary:S
-#' bns=as.matrix(generate.binScov(paramt,R=Rsites,Tmax=Tsearch,covar=x))
-#' str(bns)
-#' head(bns)
+#' cnts=as.matrix(generate.countScov(paramt,R=Rsites,Tmax=Tsearch,covar=x))
+#' str(cnts)
+#' head(cnts)
 #' 
 #' @export
-generate.binScov=function(param,R,Tmax,covar)
+generate.countScov=function(param, R, Tmax, covar)
 {
   b0=param[1]
   b1=param[2]
   h=param[3]
-  lambda=exp(b0+b1*covar)
+  lam=exp(b0+b1*covar)
+  p=1-exp(-h*Tmax)
   yvec=matrix(0,R,1)
-  n = rpois(R, lambda)
-  pvec=1-exp(-h*n*Tmax)
-  for(i in 1:R)
-  {yvec[i]=rbinom(1,1,pvec[i])}
-  data=cbind(yvec)
-  return(data)
+  for(i in 1:R){
+    n=rpois(1,lam[i])
+    yvec[i]=rbinom(1,n,p)}
+  return(yvec)
 }
 
 #' @title Evaluates the negeative log-likelihood for model Binary:S with lambda depending 
@@ -78,7 +76,7 @@ generate.binScov=function(param,R,Tmax,covar)
 #' @param covar A vector covariate of length \code{R} on which the expected number of 
 #' animals in the site depends linearly (assumed to be the same for all occasions).
 #' 
-#' @return Returns the negative log-likelihood function evaluated for model Binary:S at 
+#' @return Returns the negative log-likelihood function evaluated for model Count:S at 
 #' the parameter values passed in \code{param}.
 #' 
 #' @examples 
@@ -103,28 +101,29 @@ generate.binScov=function(param,R,Tmax,covar)
 #' paramt=c(b0t,b1t,ht)
 #' 
 #' # data for Binary:S
-#' bns=as.matrix(generate.binScov(paramt,R=Rsites,Tmax=Tsearch,covar=x))
+#' bns=as.matrix(generate.countScov(paramt,R=Rsites,Tmax=Tsearch,covar=x))
 #' 
 #' init.paramt=c(b0t, b1t, log(ht))
-#' nll = nll.binScov(param=init.paramt, R=Rsites, Tmax=Tsearch,dat=bns, covar=x)
+#' nll = nll.countScov(param=init.paramt, R=Rsites, Tmax=Tsearch,dat=bns, covar=x)
 #' nll
 #' 
 #' # optimize
-#' fit.binScov=optim(init.paramt,nll.binScov,R=Rsites,Tmax=Tsearch,dat=bns,covar=x)
-#' estpar.binScov=fit.binScov$par
+#' fit.countScov=optim(init.paramt,nll.countScov,R=Rsites,Tmax=Tsearch,dat=bns,covar=x)
+#' estpar.countScov=fit.countScov$par
 #' # compare estimates and true parameters
-#' c(estpar.binScov[1:2],exp(estpar.binScov[3]))
+#' c(estpar.countScov[1:2],exp(estpar.countScov[3]))
 #' paramt 
 #' 
 #' @export
-nll.binScov=function(param,R,Tmax,dat,covar)
+nll.countScov=function(param,R,Tmax,dat,covar)
 {
   b0=param[1]
   b1=param[2]
   h=exp(param[3])
-  lam=as.matrix(exp(b0+b1*covar))
   yvec=dat
-  loglik=sum(-(1-yvec)*lam*(1-exp(-h*Tmax))+
-               yvec*log(1-exp(-lam*(1-exp(-h*Tmax)))) )
+  lam=exp(b0+b1*covar)
+  p=1-exp(-h*Tmax)
+  loglik=sum(yvec*log(lam))+sum(yvec*log(p))-
+    sum(lam*p)-sum(log(factorial(yvec)))
   return(-loglik)
 }
