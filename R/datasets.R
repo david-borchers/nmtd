@@ -1,31 +1,32 @@
 #' @name Karoodata
 #' @title Data from survey in the Karoo
 #' @docType data
-#' @description Data from survey in the Karoo.
+#' @description Data from a bird survey in the Karoo region of South Africa.
 #' @usage Karoodata
 #' @format A data frame with 4015 observations on the following 19 variables.
 #'  \describe{
-#'    \item{\code{survey_id}}{tbc}
-#'    \item{\code{temperature}}{tbc}
-#'    \item{\code{cloud}}{tbc}
-#'    \item{\code{wind}}{tbc}
-#'    \item{\code{rain}}{tbc}
-#'    \item{\code{pentad}}{tbc}
-#'    \item{\code{survey_start}}{tbc}
-#'    \item{\code{datetime}}{tbc}
-#'    \item{\code{species}}{tbc}
-#'    \item{\code{ttd}}{tbc}
-#'    \item{\code{longitude}}{tbc}
-#'    \item{\code{latitude}}{tbc}
-#'    \item{\code{mins_after_dawn seenheard}}{tbc}
-#'    \item{\code{perchedflying}}{tbc}
-#'    \item{\code{distance}}{tbc}
-#'    \item{\code{latin_name}}{tbc}
-#'    \item{\code{date}}{tbc}
-#'    \item{\code{time}}{tbc}
+#'    \item{\code{survey_id}}{Each point count had a unique identification code, consisting of the pentad code (see below) combined with the point count number of the day (or pentad), usually a sequence number from 1 to 20.}
+#'    \item{\code{temperature}}{Temperature was recorded on a Kestrel hand-held anenometer in shaded conditions in degrees celsius.}
+#'    \item{\code{cloud}}{Cloud cover was estimated as a percentage from 0 - 100, with 0 being clear skies and 100 being overcast.}
+#'    \item{\code{wind}}{Wind was recorded on a Kestrel hand-held anenometer as meters per second.}
+#'    \item{\code{rain}}{The following categories were used: 1 = rain <2 days, 2 = rain 2 - 7 days; 3 = rain 7 - 30 days; 4 = no notable recent rain.}
+#'    \item{\code{pentad}}{A pentad code is a name given to a geographical area used by the Southern African Bird Atlas Project. The area consisting of 5 x 5 arc minutes or roughly 9 x 9 km, with the first number referencing latitutude and the second part referencing longitude, in degrees and minutes.}
+#'    \item{\code{survey_start}}{The survey start time was recorded automatically by the CyberTracker software app used to capture all survey data. Units: Year-month-date T hour:minutes:seconds}
+#'    \item{\code{datetime}}{The time of each detection was recorded automatically by the CyberTracker software. Units: Year-month-date T hour:minutes:seconds.}
+#'    \item{\code{species}}{Common names were recorded using those used by Dean (1995: Where birds are rare or fill the air, PhD thesis).}
+#'    \item{\code{ttd}}{The time of detection minus the start time of the point count, in seconds.}
+#'    \item{\code{longitude}}{Location data was recorded automatically by the GPS in the Huawei 6 hand-held device via the CyberTracker software. Units: Decimal degrees.}
+#'    \item{\code{latitude}}{Location data was recorded automatically by the GPS in the Huawei 6 hand-held device via the CyberTracker software. Units: Decimal degrees.}
+#'    \item{\code{mins_after_dawn}{The number of minutes to detection from the dawn of the survey date, derived from the BirdLasser app.}
+#'    \item{\code{seenheard}}{Detection methods: was the bird heard only? Was it seen only? Was it heard then seen? Or Seen then heard? This information has been used to calculate detection coefficients in other studies e.g. https://www.tandfonline.com/doi/abs/10.2989/00306525.2016.1219413}
+#'    \item{\code{perchedflying}}{Behaviour information related to distance sampling, where only distance to birds in the area at the start of the count are used to calculate densities. 4 Categories include: Perched at time of detection, Flying at time of detection, or Perched then Flying or Flying then Perched.}
+#'    \item{\code{distance}}{Distance in meters from the observer to the bird or centre of the group of birds was measured using a handheld rangefinder (Nikon Aculon)}
+#'    \item{\code{latin_name}}{Scientific names were those assigned to the Common Names by the Animal Demography Unit, based on the IOC lists of the time (worldbirdnames.org)}
+#'    \item{\code{date}}{Simple date of survey extracted from survey start time information (above). Units: Year/month/date}
+#'    \item{\code{time}}{Simple time of survey extracted from survey start time information (above). Units: hour:minutes:seconds}
 #'  }
-#' @details To be completed.
-#' @source https://doi.org/10.5061/dryad.msbcc2fv7.
+#' @details These data were collected by Alan T. K. Lee and consist of 10 minute point counts during which all detected birds were recorded, along with the time since the start of the survey and distance between the bird and the observer. The surveys covered 61 sites - pentads. Each pentad was surveyed multiple times. The repeat surveys consisted of spatially replicated point counts. More detail on the data collection methods and study area can be found in Henry et al 2020 (reference below) and Lee et al 2018 (Ostrich 89: 363-372; DOI: 10.2989/00306525.2018.1553804)
+#' @source https://doi.org/10.5061/dryad.msbcc2fv7 where it is licensed under a CC0 1.0 Universal (CC0 1.0) Public Domain Dedication license.
 #' @references 
 #' Henry, Dominic; Lee, Alan; Altwegg, Res (2020), Can time-to-detection models with fewer 
 #' survey replicates provide a robust alternative to traditional site-occupancy models? 
