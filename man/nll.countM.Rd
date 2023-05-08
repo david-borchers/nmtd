@@ -2,7 +2,7 @@
 % Please edit documentation in R/countM.R
 \name{nll.countM}
 \alias{nll.countM}
-\title{Evaluates the negeative log-likelihood for model Binary:M with lambda constant}
+\title{Evaluates the negeative log-likelihood for model Count:M with lambda constant}
 \usage{
 nll.countM(param, R, J, Tmax, dat)
 }
@@ -16,16 +16,15 @@ log of the detection hazard, h.}
 
 \item{Tmax}{The survey duration (assumed to be the same for all sites)}
 
-\item{dat}{An \code{R} by \code{J} matrix of binary values, with a 1 representing
-detection and a 0 representing no detection}
+\item{dat}{An \code{R} by \code{J} matrix of counts.}
 }
 \value{
 Returns the negative log-likelihood function evaluated at the parameter values
 passed in \code{param}.
 }
 \description{
-Evaluates the negeative log-likelihood for model Binary:M, assuming constant lambda, 
-given initial parameter estimates and binary data from a multiple-occasion survey.
+Evaluates the negeative log-likelihood for model Count:M, assuming constant lambda, 
+given initial parameter estimates and count data from a multiple-occasion survey.
 }
 \examples{
 # setting
@@ -37,7 +36,7 @@ lamt = 2
 ht=0.4620981
 paramt=c(lamt,ht)
 
-# data for Binary:M
+# data for Count:M
 set.seed(123) # for reproducibility
 cntm=as.matrix(generate.countM(paramt,R=Rsites,J=Jsites,Tmax=Tsearch))
 # optimize

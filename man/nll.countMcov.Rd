@@ -55,7 +55,7 @@ mean(lambda)
 1-exp(-mean(lambda)) #P(site occupancy)
 paramt=c(b0t,b1t,ht)
 
-# data for Binary:M
+# data for Count:M
 cntm=as.matrix(generate.countMcov(paramt,R=Rsites,J=Jsites,Tmax=Tsearch,covar=x))
 
 init.paramt=c(b0t, b1t, log(ht))
