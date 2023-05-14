@@ -63,7 +63,7 @@ generate.countST1=function(param, R, Tmax)
 #' @param R The number of sites.
 #' @param Tmax The survey duration (assumed to be the same for all sites)
 #' @param dat An \code{R} by 2 matrix with first column being the number of detections 
-#' in the site and second column being the shortest time to detection of any animals 
+#' in the site and second column being the time to first detection of an animal 
 #' in the site (with zero representing no detections).
 #' 
 #' @return Returns the negative log-likelihood function evaluated at the parameter values
@@ -203,7 +203,7 @@ generate.countST1cov=function(param,R,Tmax,covar)
 #' @param R The number of sites.
 #' @param Tmax The survey duration (assumed to be the same for all sites)
 #' @param dat An \code{R} by 2 matrix with first column being the number of detections 
-#' in the site and second column being the shortest time to detection of any animals 
+#' in the site and second column being the time to first detection of an animal 
 #' in the site (with zero representing no detections).
 #' @param covar A vector covariate of length \code{R} on which the expected number of 
 #' animals in the site depends linearly (assumed to be the same for all occasions).

@@ -15,7 +15,7 @@ log of the detection hazard, h.}
 \item{Tmax}{The survey duration (assumed to be the same for all sites)}
 
 \item{dat}{An \code{R} by 2 matrix with first column being the number of detections 
-in the site and second column being the shortest time to detection of any animals 
+in the site and second column being the time to first detection of an animal 
 in the site (with zero representing no detections).}
 }
 \value{

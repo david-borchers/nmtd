@@ -1,4 +1,4 @@
-#' @title Generates count data for model CountT:M with lambda constant
+#' @title Generates count data for model CountT1:M with lambda constant
 #'
 #' @description
 #' Generates Poisson random variables for each of the \code{R} sites, corresponding to the 
@@ -13,7 +13,7 @@
 #' 
 #' @return Returns an \code{R} by \code{2J} matrix with first \code{J} columns being the numbers 
 #' of detections in each site on each occasion and the remaining \code{J} columns being the 
-#' **sum** of times to detection for all detected  animals within the site on the occasion 
+#' shortest time to detection for all detected  animals with in the site on the occasion 
 #' (with zero representing no detections).
 #' 
 #' @examples # setting
@@ -26,34 +26,37 @@
 #' ht=0.4620981
 #' paramt=c(lamt,ht)
 #' 
-#' # data for CountT:M
-#' cntm=as.matrix(generate.countMT(paramt,R=Rsites,J=Jsites,Tmax=Tsearch))
+#' # data for CountT1:M
+#' cntm=as.matrix(generate.countMT1(paramt,R=Rsites,J=Jsites,Tmax=Tsearch))
 #' str(cntm)
 #' head(cntm)
 #' 
 #' @export
-generate.countMT=function(param, R, J, Tmax)
+generate.countMT1=function(param, R, J, Tmax)
 {
   lam=param[1]
   h=param[2]
   ymat=matrix(0,R,J)
-  tsmat=matrix(0,R,J)
+  t1mat=matrix(0,R,J)
   for(i in 1:R)
-  {
-    n=rpois(1,lam)
-    if(n==0){ymat[i,]=matrix(0,J,1)
-    tsmat[i,]=matrix(0,J,1)}
-    if( n > 0)
-      for(j in 1:J)
-      {
-        tvec=sort(rexp(n,h))
-        tvecltT=as.matrix(tvec[tvec < Tmax])
-        ymat[i,j]=nrow(tvecltT)
-        tsmat[i,j]=sum(tvecltT)
-      }
+  { n=rpois(1,lam)
+  if( n > 0)
+    for(j in 1:J)
+    {
+      tvec=sort(rexp(n,h))
+      tvecltT=as.matrix(tvec[tvec < Tmax])
+      y=nrow(tvecltT)
+      if(y==0)
+      {ymat[i,j]=0
+      t1mat[i,j]=0}else
+      {ymat[i,j]=y
+      t1mat[i,j]=min(tvecltT)}
+    }
   }
-  return(cbind(ymat,tsmat))
+  return(cbind(ymat,t1mat))
 }
+
+
 
 #' @title Evaluates the negeative log-likelihood for model CountT:M with lambda constant
 #'
@@ -68,7 +71,7 @@ generate.countMT=function(param, R, J, Tmax)
 #' @param Tmax The survey duration (assumed to be the same for all sites)
 #' @param dat An \code{R} by \code{2J} matrix with first \code{J} columns being the numbers 
 #' of detections in each site on each occasion and the remaining \code{J} columns being the 
-#' **sum** of times to detection for all detected  animals within the site on the occasion 
+#' times to first detection of an animal within the site on the occasion 
 #' (with zero representing no detections).
 #' 
 #' @return Returns the negative log-likelihood function evaluated at the parameter values
@@ -84,44 +87,70 @@ generate.countMT=function(param, R, J, Tmax)
 #' ht=0.4620981
 #' paramt=c(lamt,ht)
 #' 
-#' # data for CountT:M
+#' # data for CountT1:M
 #' set.seed(123) # for reproducibility
-#' cntm=as.matrix(generate.countMT(paramt,R=Rsites,J=Jsites,Tmax=Tsearch))
+#' cntm=as.matrix(generate.countMT1(paramt,R=Rsites,J=Jsites,Tmax=Tsearch))
 #' # optimize
 #' init.paramt=c(log(lamt),log(ht))
-#' fit.countMT=optim(init.paramt,nll.countMT,R=Rsites,J=Jsites,Tmax=Tsearch,dat=cntm)
-#' estpar.countMT=fit.countMT$par
+#' fit.countMT1=optim(init.paramt,nll.countMT1,R=Rsites,J=Jsites,Tmax=Tsearch,dat=cntm)
+#' estpar.countMT1=fit.countMT1$par
 #' # compare estimates and true parameters
-#' exp(estpar.countMT)
+#' exp(estpar.countMT1)
 #' paramt 
 #' 
 #' @export
-nll.countMT=function(param, R, J, Tmax, dat)
+nll.countMT1=function(param, R, J, Tmax, dat)
 { 
   ymat=dat[,1:J]
-  tsmat=dat[,(J+1):(2*J)]
+  t1mat=dat[,(J+1):(2*J)]
   lam=exp(param[1])
   h=exp(param[2])
+  # all R
   loglik=0
   for(i in 1:R)
   {
     yvec=ymat[i,]
-    yvec=sort(yvec, decreasing=FALSE)
-    yij=yvec[-J]
-    yiJ=yvec[J]
-    tsum=tsmat[i,]
-    term1=sum(yvec)*log(h)-h*sum(tsum)
-    term2=-lam-h*sum(Tmax*(yiJ-yvec))+yiJ*log(lam)
-    term3=(J-1)*log(factorial(yiJ))-sum(log(factorial(yiJ-yij)))
-    theta=lam*exp(-h*Tmax*J)
-    hgfun=genhypergeo(rep(yiJ,(J-1)) + 1,yiJ - yij + 1,theta)
-    term4=log(hgfun)
-    loglik=loglik+term1+term2+term3+term4
+    if(sum(yvec)==0)
+    {
+      loglik=loglik-lam*(1-exp(-h*Tmax*J))
+    }
+    if(sum(yvec)>0)
+    {# sort on yvec and t1
+      t1vec=t1mat[i,]
+      yt=cbind(yvec,t1vec)
+      yt=yt[order(yt[,1],decreasing=FALSE),]
+      yvec=yt[,1]
+      t1vec=yt[,2]
+      yij=yvec[-J]
+      ymax=yvec[J]
+      # terms for y[i,j] > 0 in site i
+      for(j in 1:J)
+      {
+        y=yvec[j]
+        if(y > 0)
+        {
+          term1=log(h)-h*t1vec[j]
+          term2=(y-1)*log((exp(-h*t1vec[j])-exp(-h*Tmax)))
+          term3=-sum(log(factorial(y-1)))
+          loglik=loglik+term1+term2+term3
+        }
+      }
+      #terms for all J equiv to sum over n
+      term1=ymax*log(lam)
+      term2=-lam-h*Tmax*sum(ymax-yvec)
+      term3=(J-1)*log(factorial(ymax))-sum(log(factorial(ymax-yij)))
+      theta=lam*exp(-h*Tmax*J)
+      hgfun=genhypergeo(rep(ymax,(J-1)) + 1,ymax - yij + 1,theta)
+      term4=log(hgfun)
+      loglik=loglik+term1+term2+term3+term4}
   }
   return(-loglik)
 }
 
-#' @title Generates binary data for model CountT:M with lambda depending 
+
+
+
+#' @title Generates binary data for model CountT1:M with lambda depending 
 #' on a covariate.
 #'
 #' @description
@@ -141,7 +170,7 @@ nll.countMT=function(param, R, J, Tmax, dat)
 #' 
 #' @return Returns an \code{R} by \code{2J} matrix with first \code{J} columns being the numbers 
 #' of detections in each site on each occasion and the remaining \code{J} columns being the 
-#' **sum** of times to detection for all detected  animals within the site on the occasion 
+#' times to first detection of an animal within the site on the occasion 
 #' (with zero representing no detections).
 #' 
 #' @examples 
@@ -167,39 +196,43 @@ nll.countMT=function(param, R, J, Tmax, dat)
 #' paramt=c(b0t, b1t,ht)
 #' 
 #' # data for CountT:M
-#' cntm=as.matrix(generate.countMTcov(paramt,R=Rsites,J=Jsites,Tmax=Tsearch,covar=x))
+#' cntm=as.matrix(generate.countMT1cov(paramt,R=Rsites,J=Jsites,Tmax=Tsearch,covar=x))
 #' str(cntm)
 #' head(cntm)
 #' 
 #' @export
-generate.countMTcov=function(param,R,J,Tmax,covar)
+generate.countMT1cov=function(param,R,J,Tmax,covar)
 {
   b0=param[1]
   b1=param[2]
   h=param[3]
   lam=exp(b0+b1*covar)
   ymat=matrix(0,R,J)
-  tsmat=matrix(0,R,J)
+  t1mat=matrix(0,R,J)
   for(i in 1:R)
   { n=rpois(1,lam[i])
   if( n > 0)
     for(j in 1:J)
     {
-      tvec=rexp(n,h)
+      tvec=sort(rexp(n,h))
       tvecltT=as.matrix(tvec[tvec < Tmax])
-      ymat[i,j]=nrow(tvecltT)
-      tsmat[i,j]=sum(tvecltT)
+      y=nrow(tvecltT)
+      if(y>0)
+      {ymat[i,j]=y
+      t1mat[i,j]=min(tvecltT)}
     }
   }
-  return(cbind(ymat,tsmat))
+  return(cbind(ymat,t1mat))
 }
 
 
-#' @title Evaluates the negeative log-likelihood for model CountT:M with lambda depending 
+
+
+#' @title Evaluates the negeative log-likelihood for model CountT1:M with lambda depending 
 #' on a covariate.
 #'
 #' @description
-#' Evaluates the negeative log-likelihood for model CountT:M, assuming that lambda 
+#' Evaluates the negeative log-likelihood for model CountT1:M, assuming that lambda 
 #' depends on a covariate \code{covar} that is site-dependent, 
 #' given initial parameter estimates and binary data from a multiple-occasion survey.
 #'
@@ -211,12 +244,12 @@ generate.countMTcov=function(param,R,J,Tmax,covar)
 #' @param Tmax The survey duration (assumed to be the same for all sites)
 #' @param dat An \code{R} by \code{2J} matrix with first \code{J} columns being the numbers 
 #' of detections in each site on each occasion and the remaining \code{J} columns being the 
-#' **sum** of times to detection for all detected  animals within the site on the occasion 
+#' times to first detection of an animal within the site on the occasion 
 #' (with zero representing no detections).
 #' @param covar A vector covariate of length \code{R} on which the expected number of 
 #' animals in the site depends linearly (assumed to be the same for all occasions).
 #' 
-#' @return Returns the negative log-likelihood function for model CountT:M evaluated at 
+#' @return Returns the negative log-likelihood function for model CountT1:M evaluated at 
 #' the parameter values passed in \code{param}.
 #' 
 #' @examples 
@@ -242,42 +275,62 @@ generate.countMTcov=function(param,R,J,Tmax,covar)
 #' paramt=c(b0t,b1t,ht)
 #' 
 #' # data for CountT:M
-#' cntm=as.matrix(generate.countMTcov(paramt,R=Rsites,J=Jsites,Tmax=Tsearch,covar=x))
+#' cntm=as.matrix(generate.countMT1cov(paramt,R=Rsites,J=Jsites,Tmax=Tsearch,covar=x))
 #' 
 #' init.paramt=c(b0t, b1t, log(ht))
-#' nll = nll.countMTcov(param=init.paramt, R=Rsites, J=Jsites, Tmax=Tsearch,dat=cntm, covar=x)
+#' nll = nll.countMT1cov(param=init.paramt, R=Rsites, J=Jsites, Tmax=Tsearch,dat=cntm, covar=x)
 #' nll
 #' 
 #' # optimize
-#' fit.countMTcov=optim(init.paramt,nll.countMTcov,R=Rsites,J=Jsites,Tmax=Tsearch,dat=cntm,covar=x)
-#' estpar.countMTcov=fit.countMTcov$par
+#' fit.countMT1cov=optim(init.paramt,nll.countMT1cov,R=Rsites,J=Jsites,Tmax=Tsearch,dat=cntm,covar=x)
+#' estpar.countMT1cov=fit.countMT1cov$par
 #' # compare estimates and true parameters
-#' c(estpar.countMTcov[1:2],exp(estpar.countMTcov[3]))
+#' c(estpar.countMT1cov[1:2],exp(estpar.countMT1cov[3]))
 #' paramt 
 #' 
 #' @export
-nll.countMTcov=function(param,R,J,Tmax,dat,covar)
-{ 
-  ymat=dat[,1:J]
-  tsmat=dat[,(J+1):(2*J)]
+nll.countMT1cov=function(param,R,J,Tmax,dat,covar)
+{
   b0=param[1]
   b1=param[2]
   h=exp(param[3])
+  ymat=dat[,1:J]
+  t1mat=dat[,(J+1):(2*J)]
   lam=exp(b0+b1*covar)
   loglik=0
   for(i in 1:R)
   {
     yvec=ymat[i,]
-    tsum=tsmat[i,]
-    yvec=sort(yvec, decreasing=FALSE)
-    yij=yvec[-J]
-    yiJ=yvec[J]
-    term1=sum(yvec)*log(h)-h*sum(tsum)
-    term2=-lam[i]-h*sum(Tmax*(yiJ-yvec))+yiJ*log(lam[i])
-    term3=(J-1)*log(factorial(yiJ))-sum(log(factorial(yiJ-yij)))
-    theta=lam[i]*exp(-h*Tmax*J)
-    hgfun=genhypergeo(rep(yiJ,(J-1)) + 1,yiJ - yij + 1,theta)
-    term4=log(hgfun)
-    loglik=loglik+term1+term2+term3+term4}
+    if(sum(yvec)==0)
+    {loglik=loglik-lam[i]*(1-exp(-h*Tmax*J))}
+    if(sum(yvec)>0)
+    {# sort on yvec and t1
+      t1vec=t1mat[i,]
+      yt=cbind(yvec,t1vec)
+      yt=yt[order(yt[,1],decreasing=FALSE),]
+      yvec=yt[,1]
+      t1vec=yt[,2]
+      yij=yvec[-J]
+      ymax=yvec[J]
+      # terms for y[i,j] > 0 in site i
+      for(j in 1:J)
+      {
+        y=yvec[j]
+        if(y > 0)
+        {term1=log(h)-h*t1vec[j]
+        term2=(y-1)*log((exp(-h*t1vec[j])-exp(-h*Tmax)))
+        term3=-sum(log(factorial(y-1)))
+        loglik=loglik+term1+term2+term3
+        }
+      }
+      #terms for all J equiv to sum over n
+      term1=ymax*log(lam[i])
+      term2=-lam[i]-h*Tmax*sum(ymax-yvec)
+      term3=(J-1)*log(factorial(ymax))-sum(log(factorial(ymax-yij)))
+      theta=lam[i]*exp(-h*Tmax*J)
+      hgfun=genhypergeo(rep(ymax,(J-1)) + 1,ymax - yij + 1,theta)
+      term4=log(hgfun)
+      loglik=loglik+term1+term2+term3+term4}
+  }
   return(-loglik)
 }
