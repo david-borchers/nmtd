@@ -4,19 +4,19 @@
 \alias{generate.countST}
 \title{Generates time to detections for model CountT:S with lambda constant}
 \usage{
-generate.countST(param, R, J, Tmax)
+generate.countST(param, R, Tmax)
 }
 \arguments{
 \item{param}{A vector comprised of the Poisson rate lambda, and the detection hazard, h.}
 
 \item{R}{The number of sites.}
 
-\item{J}{The number of occasions (assumed the same for all sites).}
-
 \item{Tmax}{The survey duration (assumed to be the same for all sites)}
 }
 \value{
-Returns an \code{R} by \code{J} matrix of counts.
+Returns an \code{R} by 2 matrix with first column being the number of detections 
+in the site and second column being the **sum** of times to detection for all detected 
+animals with in the site (with zero representing no detections).
 }
 \description{
 Generates Poisson random variables for each of the \code{R} sites, corresponding to the 
@@ -33,7 +33,7 @@ lamt = 2
 ht=0.4620981
 paramt=c(lamt,ht)
 
-cnts=as.matrix(generate.countST(paramt,R=Rsites,J=Jsites,Tmax=Tsearch))
+cnts=as.matrix(generate.countST(paramt,R=Rsites,Tmax=Tsearch))
 str(cnts)
 head(cnts)
 

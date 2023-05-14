@@ -5,39 +5,19 @@
 \alias{Karoodata}
 \title{Data from survey in the Karoo}
 \format{
-A data frame with 4015 observations on the following 19 variables.
- \describe{
-   \item{\code{survey_id}}{tbc}
-   \item{\code{temperature}}{tbc}
-   \item{\code{cloud}}{tbc}
-   \item{\code{wind}}{tbc}
-   \item{\code{rain}}{tbc}
-   \item{\code{pentad}}{tbc}
-   \item{\code{survey_start}}{tbc}
-   \item{\code{datetime}}{tbc}
-   \item{\code{species}}{tbc}
-   \item{\code{ttd}}{tbc}
-   \item{\code{longitude}}{tbc}
-   \item{\code{latitude}}{tbc}
-   \item{\code{mins_after_dawn seenheard}}{tbc}
-   \item{\code{perchedflying}}{tbc}
-   \item{\code{distance}}{tbc}
-   \item{\code{latin_name}}{tbc}
-   \item{\code{date}}{tbc}
-   \item{\code{time}}{tbc}
- }
+
 }
 \source{
-https://doi.org/10.5061/dryad.msbcc2fv7.
+https://doi.org/10.5061/dryad.msbcc2fv7 where it is licensed under a CC0 1.0 Universal (CC0 1.0) Public Domain Dedication license.
 }
 \usage{
 Karoodata
 }
 \description{
-Data from survey in the Karoo.
+Data from a bird survey in the Karoo region of South Africa.
 }
 \details{
-To be completed.
+These data were collected by Alan T. K. Lee and consist of 10 minute point counts during which all detected birds were recorded, along with the time since the start of the survey and distance between the bird and the observer. The surveys covered 61 sites - pentads. Each pentad was surveyed multiple times. The repeat surveys consisted of spatially replicated point counts. More detail on the data collection methods and study area can be found in Henry et al 2020 (reference below) and Lee et al 2018 (Ostrich 89: 363-372; DOI: 10.2989/00306525.2018.1553804)
 }
 \examples{
  data(Karoodata)
