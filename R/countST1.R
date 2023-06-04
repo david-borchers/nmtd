@@ -148,12 +148,12 @@ nll.countST1=function(param, R, Tmax, dat)
 #' # simulation of the covariate x over R sites 
 #' # hence the site-dependent abundance for the true parameters b0t and b1t
 #' set.seed(123) # for reprodicibility
-#' x=rnorm(R,0,1)
+#' x=rnorm(Rsites,0,1)
 #' lambda=exp(b0t+b1t*x)
 #' mean(lambda)
 #' 
 #' # true probabilites
-#' 1-exp(-ht*Tmax)      #P(individual detected)
+#' 1-exp(-ht*Tsearch)      #P(individual detected)
 #' 1-exp(-mean(lambda)) #P(site occupancy)
 #' paramt=c(b0t, b1t,ht)
 #' 
@@ -223,12 +223,12 @@ generate.countST1cov=function(param,R,Tmax,covar)
 #' # simulation of the covariate x over R sites 
 #' # hence the site-dependent abundance for the true parameters b0t and b1t
 #' set.seed(123) # for reprodicibility
-#' x=rnorm(R,0,1)
+#' x=rnorm(Rsites,0,1)
 #' lambda=exp(b0t+b1t*x)
 #' mean(lambda)
 #' 
 #' # true probabilites
-#' 1-exp(-ht*Tmax)      #P(individual detected)
+#' 1-exp(-ht*Tsearch)      #P(individual detected)
 #' 1-exp(-mean(lambda)) #P(site occupancy)
 #' paramt=c(b0t,b1t,ht)
 #' 

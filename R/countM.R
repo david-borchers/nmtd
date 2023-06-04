@@ -144,7 +144,7 @@ nll.countM=function(param, R, J, Tmax, dat)
 #' # simulation of the covariate x over R sites 
 #' # hence the site-dependent abundance for the true parameters b0t and b1t
 #' set.seed(123) # for reprodicibility
-#' x=rnorm(R,0,1)
+#' x=rnorm(Rsites,0,1)
 #' lambda=exp(b0t+b1t*x)
 #' mean(lambda)
 #' 
@@ -211,7 +211,7 @@ generate.countMcov=function(param,R,J,Tmax,covar)
 #' # simulation of the covariate x over R sites 
 #' # hence the site-dependent abundance for the true parameters b0t and b1t
 #' set.seed(123) # for reprodicibility
-#' x=rnorm(R,0,1)
+#' x=rnorm(Rsites,0,1)
 #' lambda=exp(b0t+b1t*x)
 #' mean(lambda)
 #' 
