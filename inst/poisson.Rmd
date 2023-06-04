@@ -1,0 +1,246 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+  word_document: default
+
+---
+
+# POISSON EXAMPLES: FUNCTIONS 
+# Note: g is the Poisson rate parameter
+
+# **PCount:S** 
+# Pass yvec from generate to evaluate
+
+# generate Poisson data for M3Ps with lambda constant
+``` {r eval=FALSE}
+gM3Psgen=function(param)
+{lam=param[1]
+g=param[2]
+yvec=matrix(0,R,1)
+for(i in 1:R)
+{n=rpois(1,lam)
+yvec[i]=rpois(1,g*n*Tmax)
+}
+return(yvec)
+}
+```
+
+# evaluates the log-likelihood for M3Ps with lambda constant
+``` {r eval=FALSE}
+gM3Ps=function(param)
+{lam=exp(param[1])
+g=exp(param[2])
+term=matrix(0,R,1)
+mu=lam*exp(-g*Tmax)
+for(i in 1:R)
+{ y= yvec[i]
+for(k in 0:y)
+{
+  term[i]=term[i]+exp(k*log(mu)+log(Stirling2(y,k)))}
+}
+loglik=-R*lam+R*lam*exp(-g*Tmax)+sum(yvec)*log(g*Tmax)+sum(log(term))
+return(-loglik)
+}
+```
+
+# generate Poisson data for M3Ps with covariate for lambda
+``` {r eval=FALSE}
+xgM3Psgen=function(param)
+{b0=param[1]
+b1=param[2]
+g=param[3]
+lam=exp(b0+b1*vegHt)
+yvec=matrix(0,R,1)
+for(i in 1:R)
+{n=rpois(1,lam[i])
+yvec[i]=rpois(1,g*n*Tmax)
+}
+return(yvec)
+}
+```
+
+# evaluates the log-likelihood for M3Ps with lambda site dependent
+``` {r eval=FALSE}
+xgM3Ps=function(param)
+{b0=param[1]
+b1=param[2]
+g=exp(param[3])
+lam=exp(b0+b1*vegHt)
+term=matrix(0,R,1)
+mu=lam*exp(-g*Tmax)
+for(i in 1:R)
+{ y= yvec[i]
+for(k in 0:y)
+{
+term[i]=term[i]+exp(k*log(mu[i])+log(Stirling2(y,k)))}
+}
+loglik=-sum(lam)+sum(mu)+sum(yvec)*log(g*Tmax)+sum(log(term))
+return(-loglik)
+}
+```
+
+# **PCount:M**
+# Pass ymat from generate to evaluate
+
+# generate Poisson data for M3Pm with lambda constant
+``` {r eval=FALSE}
+gM3Pmgen=function(param)
+{lam=param[1]
+g=param[2]
+ymat=matrix(0,R,J)
+for(i in 1:R)
+{n=rpois(1,lam)
+for(j in 1:J)
+ymat[i,j]=rpois(1,g*n*Tmax)
+}
+return(ymat)
+}
+```
+
+# calculate -log-ikelihood M3Pm with lambda constant
+``` {r eval=FALSE}
+gM3Pm=function(param)
+{lam=exp(param[1])
+g=exp(param[2])
+mu=lam*exp(-g*Tmax*J)
+fin=matrix(0,R,1)
+term=matrix(0,R,1)
+ytot=rowSums(ymat)
+for(i in 1:R)
+{ if(ytot[i] > 0)
+{
+  for(k in 0:ytot[i])
+    {term[i]=term[i]+exp(k*log(mu)+log(Stirling2(ytot[i],k)))}
+  fin[i]=fin[i]+log(term[i])
+}
+}
+loglik=-R*lam+R*mu+sum(ymat)*log(g*Tmax)+sum(fin)
+return(-loglik)
+}
+```
+
+# generate Poisson data for M3Pm with lambda site dependent
+``` {r eval=FALSE}
+xgM3Pmgen=function(param)
+{b0=param[1]
+b1=param[2]
+g=param[3]
+lam=exp(b0+b1*vegHt)
+ymat=matrix(0,R,J)
+for(i in 1:R)
+{n=rpois(1,lam[i])
+for(j in 1:J)
+  ymat[i,j]=rpois(1,g*n*Tmax)
+}
+return(ymat)
+}
+```
+
+# calculate -log-ikelihood for M3Pm with lambda site-dependent
+``` {r eval=FALSE}
+xgM3Pm=function(param)
+{b0=param[1]
+b1=param[2]
+g=exp(param[3])
+lam=exp(b0+b1*vegHt)
+fin=matrix(0,R,1)
+term=matrix(0,R,1)
+ytot=rowSums(ymat)
+mu=lam*exp(-g*Tmax*J)
+for(i in 1:R)
+{if(ytot[i] > 0)
+   {for(k in 0:ytot[i])
+   {term[i]=term[i]+exp(k*log(mu[i])+log(Stirling2(ytot[i],k)))}
+   fin[i]=fin[i]+log(term[i])}
+}
+loglik=-sum(lam)+sum(mu)+sum(ymat)*log(g*Tmax)+sum(fin)
+return(-loglik)
+}
+```
+
+# POISSON EXAMPLES: PROGRAMS
+
+# For illustration: S with no covariates, M with covariates 
+
+# PCount:S No covariates
+
+## R changes to Rsites
+## Tmax changes to Tsearch
+
+``` {r eval=FALSE}
+rm(list=ls())
+library(copula)
+# seed
+set.seed(123)
+# setting
+R=100. #number of sites
+Tmax=3 #maximum time
+#true parameters
+lamt=2
+gt=0.4620981
+# starting values and matrices for simulations 
+nsim=1000
+nprint=nsim/10
+lamvec=array(0,c(nsim,1))
+gvec=array(0,c(nsim,1))
+paramt=c(lamt,gt)
+param0=c(log(lamt),log(gt))
+# cycle
+for(isim in 1:nsim)
+  { #generate data
+  yvec=gM3Psgen(paramt)
+  # optimize
+  finopt=optim(param0,gM3Ps,method="BFGS")
+  lamvec[isim,]=exp(finopt$par[1])
+  gvec[isim,]=exp(finopt$par[2])
+  #counter
+  if(floor(isim/nprint)*nprint==isim)
+  {print(isim)}
+  }
+```
+
+# PCOUNT:M with covariates
+## R changes to Rsites
+## Tmax changes to Tsearch
+## J changes to Jsites
+
+``` {r eval=FALSE}
+library(copula)
+# seed
+set.seed(123)
+# setting
+R=100. #number of sites
+Tmax=3 #maximum time
+J=5   #multisite site
+#true parameters
+b0t =0.660878  
+b1t =0.255413
+gt=0.4620981
+# simulation of the covariate vegHt over R sites for true parameters
+vegHt=rnorm(R,0,1)
+hist(vegHt)
+lambda=exp(b0t+b1t*vegHt)
+mean(lambda)
+# starting values and matrices for simulations 
+nsim=1000
+nprint=nsim/10
+b0vec=array(0,c(nsim,1))
+b1vec=array(0,c(nsim,1))
+gvec=array(0,c(nsim,1))
+paramt=c(b0t,b1t,gt)
+param0=cbind(b0t,b1t,log(gt))
+# cycle
+for(isim in 1:nsim) {
+  # generate
+  ymat=xgM3Pmgen(paramt)
+  # optimize
+  finopt=optim(param0,xgM3Pm,method="BFGS")
+  b0vec[isim,]=finopt$par[,1]
+  b1vec[isim,]=finopt$par[,2]
+  gvec[isim,]=exp(finopt$par[,3])
+  #counter
+  if(floor(isim/nprint)*nprint==isim)
+  {print(isim)}
+}
+```
