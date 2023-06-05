@@ -131,7 +131,7 @@ nll.PcountM = function(param, R, J, Tmax, dat)
 #' 
 #' @examples
 #' # seed
-#' set.seed(123)
+#' set.seed(321)
 #' # setting
 #' Rsites=100. #number of sites
 #' Joccs=5 # number of occasions
@@ -193,7 +193,7 @@ generate.PcountMcov = function(param, R, J, Tmax, covar)
 #' 
 #' @examples
 #' # seed
-#' set.seed(123)
+#' set.seed(321)
 #' # setting
 #' Rsites=100. #number of sites
 #' Joccs=5 # number of occasions
@@ -218,7 +218,7 @@ generate.PcountMcov = function(param, R, J, Tmax, covar)
 #' # starting values 
 #' param0=cbind(b0t,b1t,log(gt))
 #' # evaluate likelihood at starting value
-#' nll.PcountMcov(param0, R=Rsites, Tmax=Tsearch, dat=ymat, covar=x)
+#' nll.PcountMcov(param0, R=Rsites, J=Joccs, Tmax=Tsearch, dat=ymat, covar=x)
 #' 
 #' # optimize
 #' fit.PcountMcov=optim(param0, nll.PcountMcov, R=Rsites, J=Joccs, Tmax=Tsearch, 
@@ -229,7 +229,7 @@ generate.PcountMcov = function(param, R, J, Tmax, covar)
 #' paramt 
 #' 
 #' @export
-nll.PcountScov = function(param, R, J, Tmax, dat, covar)
+nll.PcountMcov = function(param, R, J, Tmax, dat, covar)
 {
   b0=param[1]
   b1=param[2]
