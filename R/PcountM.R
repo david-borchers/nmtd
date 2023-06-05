@@ -204,7 +204,6 @@ generate.PcountMcov = function(param, R, J, Tmax, covar)
 #' gt=0.4620981
 #' # simulation of the covariate x over R sites for true parameters
 #' x=rnorm(R,0,1)
-#' hist(x)
 #' lambda=exp(b0t+b1t*x)
 #' mean(lambda)
 #' # true parameters
