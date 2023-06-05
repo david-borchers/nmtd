@@ -162,11 +162,11 @@ generate.PcountScov = function(param, R, Tmax, covar)
 #' @description
 #' Evaluates the negeative log-likelihood for model PCount:S, assuming that lambda 
 #' depends on a covariate \code{covar} that is site-dependent, 
-#' given initial parameter estimates and binary data from a single-occasion survey.
+#' given initial parameter estimates and Poissonn count data from a single-occasion survey.
 #'
 #' @param param A vector comprised of parameters \eqn{b_0}{b0}, \eqn{b_1}{b1}, 
 #' and the log of the detection hazard (in that order), where the log of the Poisson rate 
-#' lambda is equal to \eqn{b_0+b_1x}{b0+b1*x} and \eqn{x}{x} is the coaviate \code{covar}.
+#' lambda is equal to \eqn{b_0+b_1x}{b0+b1*x} and \eqn{x}{x} is the covariate \code{covar}.
 #' @param R The number of sites.
 #' @param Tmax The survey duration (assumed to be the same for all sites)
 #' @param dat An \code{R} by 1 matrix of counts
