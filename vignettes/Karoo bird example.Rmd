@@ -1,0 +1,41 @@
+---
+title: "Worked example: Karoo bird data"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Worked example: Karoo bird data}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+
+This vignette shows a worked example of how the nmtd package can be used to fit various models to data. As an example, we are using the Karoodata data set that comes with the package. See the helpfile for more information on this data set and its origin.
+
+```{r setup}
+library(nmtd)
+```
+
+## Getting the data ready
+
+We first load the data frame and have a quick look at it:
+
+```{r}
+data("Karoodata")
+str(Karoodata)
+names(Karoodata)
+```
+
+The data set consists of bird counts carried out at points throughout the Karoo region in South Africa. All bird species that were seen or heard were noted down, along with the exact time at which the first individual of a species was encountered. A number of covariates were also recorded.
+
+For our purposes here, we choose a single species,
+
+```{r}
+table(Karoodata$pentad, Karoodata$species)
+
+```

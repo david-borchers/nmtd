@@ -9,7 +9,7 @@
 Functions for data generation and fitting of N-mixture models with Time-to-Detection Data
 }
 \references{
-Altwegg, R., Borchers, D.L. and Haines, L.M. 2023 Exact Likelihoods for N-mixture models 
+Haines, L.M., Altwegg, R., and Borchers, D.L. 2023 Exact Likelihoods for N-mixture models 
 with Time-to-Detection Data. ANZJS.
 }
 \author{

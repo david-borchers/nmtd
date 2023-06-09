@@ -11,3 +11,7 @@ Depends: copula (>= 1.1.2), hypergeo (>= 1.2.13)
 LinkingTo: copula, hypergeo
 Encoding: UTF-8
 RoxygenNote: 7.2.0
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
