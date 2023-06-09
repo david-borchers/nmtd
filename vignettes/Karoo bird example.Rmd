@@ -15,10 +15,11 @@ knitr::opts_chunk$set(
 ```
 
 
-This vignette shows a worked example of how the nmtd package can be used to fit various models to data. As an example, we are using the Karoodata data set that comes with the package. See the helpfile for more information on this data set and its origin.
+This vignette shows a worked example of how the `nmtd` package can be used to fit various models to data. As an example, we are using the `Karoodata` data set that comes with the package. See the helpfile for more information on this data set and its origin.
 
 ```{r setup}
 library(nmtd)
+library(tidyverse)
 ```
 
 ## Getting the data ready
@@ -31,11 +32,24 @@ str(Karoodata)
 names(Karoodata)
 ```
 
-The data set consists of bird counts carried out at points throughout the Karoo region in South Africa. All bird species that were seen or heard were noted down, along with the exact time at which the first individual of a species was encountered. A number of covariates were also recorded.
+The data set consists of 10-minute bird counts carried out at points (`survey_id`) throughout the Karoo region in South Africa. All bird species that were seen or heard were noted down, along with the exact time at which the first individual of a species was encountered. A number of covariates were also recorded. Multiple point counts were carried out at each site (`pentad`), which are grid cells of 5' $\times$ 5' (longitude, latitude).
 
-For our purposes here, we choose a single species,
+In total, there were `r length(unique(Karoodata$survey_id))` surveys to `r length(unique(Karoodata$pentad))` sites. Each site received between 10 and 20 surveys:
 
 ```{r}
-table(Karoodata$pentad, Karoodata$species)
+nsurveys <- Karoodata %>%
+  group_by(pentad) %>%
+  summarise(surveys = length(unique(survey_id)))
 
+hist(nsurveys$surveys, main = "", xlab = "Number of surveys")
+```
+
+For our purposes here, we choose a single species, the bokmakierie (*Telophorus zeylonus*), an attractive bushshrike that is quite common in the region.
+
+```{r}
+# table(Karoodata$pentad, Karoodata$species)  # useful table to see how common each species is
+
+Karoodata$bokmakierie <- NA
+Karoodata$bokmakierie[Karoodata$species == "Bokmakierie"] <- 1
+Karoodata$bokmakierie[is.na(Karoodata$bokmakierie)] <- 0
 ```
