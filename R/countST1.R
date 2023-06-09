@@ -55,7 +55,7 @@ generate.countST1=function(param, R, Tmax)
 #' @title Evaluates the negative log-likelihood for model CountT1:S with lambda constant
 #'
 #' @description
-#' Evaluates the negeative log-likelihood for model CountT1:S, assuming constant lambda, 
+#' Evaluates the negative log-likelihood for model CountT1:S, assuming constant lambda, 
 #' given initial parameter estimates and count data from a single-occasion survey.
 #'
 #' @param param A vector comprised of the log of the Poisson rate lambda, and the 
@@ -189,11 +189,11 @@ generate.countST1cov=function(param,R,Tmax,covar)
 }
 
 
-#' @title Evaluates the negeative log-likelihood for model CountT1:S with lambda depending 
+#' @title Evaluates the negative log-likelihood for model CountT1:S with lambda depending 
 #' on a covariate.
 #'
 #' @description
-#' Evaluates the negeative log-likelihood for model CountT1:S, assuming that lambda 
+#' Evaluates the negative log-likelihood for model CountT1:S, assuming that lambda 
 #' depends on a covariate \code{covar} that is site-dependent, 
 #' given initial parameter estimates and binary data from a multiple-occasion survey.
 #'

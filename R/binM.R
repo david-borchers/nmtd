@@ -45,10 +45,10 @@ generate.binM=function(param,R,J,Tmax)
 
 
 
-#' @title Evaluates the negeative log-likelihood for model Binary:M with lambda constant
+#' @title Evaluates the negative log-likelihood for model Binary:M with lambda constant
 #'
 #' @description
-#' Evaluates the negeative log-likelihood for model Binary:M, assuming constant lambda, 
+#' Evaluates the negative log-likelihood for model Binary:M, assuming constant lambda, 
 #' given initial parameter estimates and binary data from a multiple-occasion survey.
 #'
 #' @param param A vector comprised of the log of the Poisson rate lambda, and the 
@@ -172,11 +172,11 @@ generate.binMcov=function(param,R,J,Tmax,covar)
 }
 
 
-#' @title Evaluates the negeative log-likelihood for model Binary:M with lambda depending 
+#' @title Evaluates the negative log-likelihood for model Binary:M with lambda depending 
 #' on a covariate.
 #'
 #' @description
-#' Evaluates the negeative log-likelihood for model Binary:M, assuming that lambda 
+#' Evaluates the negative log-likelihood for model Binary:M, assuming that lambda 
 #' depends on a covariate \code{covar} that is site-dependent, 
 #' given initial parameter estimates and binary data from a multiple-occasion survey.
 #'
@@ -220,11 +220,11 @@ generate.binMcov=function(param,R,J,Tmax,covar)
 #' bnm=as.matrix(generate.binMcov(paramt,R=Rsites,J=Jsites,Tmax=Tsearch,covar=x))
 #' 
 #' init.paramt=c(b0t, b1t, log(ht))
-#' nll = nll.binMcov(param=init.paramt, R=Rsites, J=Jsites, Tmax=Tsearch,dat=bns, covar=x)
+#' nll = nll.binMcov(param=init.paramt, R=Rsites, J=Jsites, Tmax=Tsearch,dat=bnm, covar=x)
 #' nll
 #' 
 #' # optimize
-#' fit.binMcov=optim(init.paramt,nll.binMcov,R=Rsites,J=Jsites,Tmax=Tsearch,dat=bns,covar=x)
+#' fit.binMcov=optim(init.paramt,nll.binMcov,R=Rsites,J=Jsites,Tmax=Tsearch,dat=bnm,covar=x)
 #' estpar.binMcov=fit.binMcov$par
 #' # compare estimates and true parameters
 #' c(estpar.binMcov[1:2],exp(estpar.binMcov[3]))

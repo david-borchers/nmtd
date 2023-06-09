@@ -44,10 +44,10 @@ generate.PcountM = function(param, R, J, Tmax)
 }
 
 
-#' @title Evaluates the negeative log-likelihood for model PCount:M with lambda constant.
+#' @title Evaluates the negative log-likelihood for model PCount:M with lambda constant.
 #'
 #' @description
-#' Evaluates the negeative log-likelihood for model PCount:M, assuming that lambda 
+#' Evaluates the negative log-likelihood for model PCount:M, assuming that lambda 
 #' is constant, given initial parameter estimates and binary data from a multiple-occasion 
 #' survey.
 #'
@@ -82,7 +82,7 @@ generate.PcountM = function(param, R, J, Tmax)
 #' nll.PcountM(param0, R=Rsites, J=Joccs, Tmax=Tsearch, dat=ymat)
 #' 
 #' # optimize
-#' fit.PcountM=optim(param0, nll.PcountS, R=Rsites, J=Joccs, Tmax=Tsearch, 
+#' fit.PcountM=optim(param0, nll.PcountM, R=Rsites, J=Joccs, Tmax=Tsearch, 
 #'                   dat=ymat, method="BFGS")
 #' estpar.PcountM=fit.PcountM$par
 #' # compare estimates and true parameters
@@ -142,7 +142,6 @@ nll.PcountM = function(param, R, J, Tmax, dat)
 #' gt=0.4620981
 #' # simulation of the covariate x over R sites for true parameters
 #' x=rnorm(R,0,1)
-#' hist(x)
 #' lambda=exp(b0t+b1t*x)
 #' mean(lambda)
 #' # true parameters
@@ -170,11 +169,11 @@ generate.PcountMcov = function(param, R, J, Tmax, covar)
 }
 
 
-#' @title Evaluates the negeative log-likelihood for model PCount:M with lambda depending 
+#' @title Evaluates the negative log-likelihood for model PCount:M with lambda depending 
 #' on a covariate.
 #'
 #' @description
-#' Evaluates the negeative log-likelihood for model PCount:M, assuming that lambda 
+#' Evaluates the negative log-likelihood for model PCount:M, assuming that lambda 
 #' depends on a covariate \code{covar} that is site-dependent, 
 #' given initial parameter estimates and Poisson count data from a \code{J}-occasion survey.
 #'

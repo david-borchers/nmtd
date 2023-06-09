@@ -3,7 +3,7 @@
 #' @description
 #' Generates Poisson random variables for each of the \code{R} sites, corresponding to the 
 #' number of animals in each site on each of \code{J} occasions. 
-#' Then generates exponential random variables for each ainimal in each site, 
+#' Then generates exponential random variables for each animal in each site, 
 #' assuming a constant hazard of detection for each animal. 
 #'
 #' @param param A vector comprised of the Poisson rate lambda, and the detection hazard, h.
@@ -58,10 +58,10 @@ generate.countMT1=function(param, R, J, Tmax)
 
 
 
-#' @title Evaluates the negeative log-likelihood for model CountT:M with lambda constant
+#' @title Evaluates the negative log-likelihood for model CountT:M with lambda constant
 #'
 #' @description
-#' Evaluates the negeative log-likelihood for model CountT:M, assuming constant lambda, 
+#' Evaluates the negative log-likelihood for model CountT:M, assuming constant lambda, 
 #' given initial parameter estimates and count data from a multiple-occasion survey.
 #'
 #' @param param A vector comprised of the log of the Poisson rate lambda, and the 
@@ -228,11 +228,11 @@ generate.countMT1cov=function(param,R,J,Tmax,covar)
 
 
 
-#' @title Evaluates the negeative log-likelihood for model CountT1:M with lambda depending 
+#' @title Evaluates the negative log-likelihood for model CountT1:M with lambda depending 
 #' on a covariate.
 #'
 #' @description
-#' Evaluates the negeative log-likelihood for model CountT1:M, assuming that lambda 
+#' Evaluates the negative log-likelihood for model CountT1:M, assuming that lambda 
 #' depends on a covariate \code{covar} that is site-dependent, 
 #' given initial parameter estimates and binary data from a multiple-occasion survey.
 #'

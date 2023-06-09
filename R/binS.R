@@ -60,11 +60,11 @@ generate.binScov=function(param,R,Tmax,covar)
   return(data)
 }
 
-#' @title Evaluates the negeative log-likelihood for model Binary:S with lambda depending 
+#' @title Evaluates the negative log-likelihood for model Binary:S with lambda depending 
 #' on a covariate.
 #'
 #' @description
-#' Evaluates the negeative log-likelihood for model Binary:S, assuming that lambda 
+#' Evaluates the negative log-likelihood for model Binary:S, assuming that lambda 
 #' depends on a covariate \code{covar} that is site-dependent, 
 #' given initial parameter estimates and binary data from a multiple-occasion survey.
 #'

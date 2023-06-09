@@ -47,10 +47,10 @@ generate.binT1M=function(param, R, J, Tmax)
   return(tmat)
 }
 
-#' @title Evaluates the negeative log-likelihood for model BinaryT1:M with lambda constant
+#' @title Evaluates the negative log-likelihood for model BinaryT1:M with lambda constant
 #'
 #' @description
-#' Evaluates the negeative log-likelihood for model BinaryT1:M, assuming constant lambda, 
+#' Evaluates the negative log-likelihood for model BinaryT1:M, assuming constant lambda, 
 #' given initial parameter estimates and time to first detection data from a 
 #' multiple-occasion survey.
 #'
@@ -187,11 +187,11 @@ generate.binT1Mcov=function(param, R, J, Tmax, covar)
   return(tmat)
 }
 
-#' @title Evaluates the negeative log-likelihood for model BinaryT1:M with lambda depending 
+#' @title Evaluates the negative log-likelihood for model BinaryT1:M with lambda depending 
 #' on a covariate.
 #'
 #' @description
-#' Evaluates the negeative log-likelihood for model BinaryT1:M, assuming that lambda 
+#' Evaluates the negative log-likelihood for model BinaryT1:M, assuming that lambda 
 #' depends on a covariate \code{covar} that is site-dependent, 
 #' given initial parameter estimates and binary data from a multiple-occasion survey.
 #'

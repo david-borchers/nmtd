@@ -3,7 +3,7 @@
 #' @description
 #' Generates Poisson random variables for each of the \code{R} sites, corresponding to the 
 #' number of animals in each site on each of \code{J} occasions. 
-#' Then generates exponential random variables for each ainimal in each site, 
+#' Then generates exponential random variables for each animal in each site, 
 #' assuming a constant hazard of detection for each animal. 
 #'
 #' @param param A vector comprised of the Poisson rate lambda, and the detection hazard, h.
@@ -55,10 +55,10 @@ generate.countMT=function(param, R, J, Tmax)
   return(cbind(ymat,tsmat))
 }
 
-#' @title Evaluates the negeative log-likelihood for model CountT:M with lambda constant
+#' @title Evaluates the negative log-likelihood for model CountT:M with lambda constant
 #'
 #' @description
-#' Evaluates the negeative log-likelihood for model CountT:M, assuming constant lambda, 
+#' Evaluates the negative log-likelihood for model CountT:M, assuming constant lambda, 
 #' given initial parameter estimates and count data from a multiple-occasion survey.
 #'
 #' @param param A vector comprised of the log of the Poisson rate lambda, and the 
@@ -195,17 +195,17 @@ generate.countMTcov=function(param,R,J,Tmax,covar)
 }
 
 
-#' @title Evaluates the negeative log-likelihood for model CountT:M with lambda depending 
+#' @title Evaluates the negative log-likelihood for model CountT:M with lambda depending 
 #' on a covariate.
 #'
 #' @description
-#' Evaluates the negeative log-likelihood for model CountT:M, assuming that lambda 
+#' Evaluates the negative log-likelihood for model CountT:M, assuming that lambda 
 #' depends on a covariate \code{covar} that is site-dependent, 
 #' given initial parameter estimates and binary data from a multiple-occasion survey.
 #'
 #' @param param A vector comprised of parameters \eqn{b_0}{b0}, \eqn{b_1}{b1}, 
 #' and the log of the detection hazard (in that order), where the log of the Poisson rate 
-#' lambda is equal to \eqn{b_0+b_1x}{b0+b1*x} and \eqn{x}{x} is the coaviate \code{covar}.
+#' lambda is equal to \eqn{b_0+b_1x}{b0+b1*x} and \eqn{x}{x} is the covariate \code{covar}.
 #' @param R The number of sites.
 #' @param J The number of occasions (assumed the same for all sites).
 #' @param Tmax The survey duration (assumed to be the same for all sites)

@@ -45,10 +45,10 @@ generate.countM=function(param, R, J, Tmax)
   return(ymat)
 }
 
-#' @title Evaluates the negeative log-likelihood for model Count:M with lambda constant
+#' @title Evaluates the negative log-likelihood for model Count:M with lambda constant
 #'
 #' @description
-#' Evaluates the negeative log-likelihood for model Count:M, assuming constant lambda, 
+#' Evaluates the negative log-likelihood for model Count:M, assuming constant lambda, 
 #' given initial parameter estimates and count data from a multiple-occasion survey.
 #'
 #' @param param A vector comprised of the log of the Poisson rate lambda, and the 
@@ -176,11 +176,11 @@ generate.countMcov=function(param,R,J,Tmax,covar)
   return(ymat)
 }
 
-#' @title Evaluates the negeative log-likelihood for model Count:M with lambda depending 
+#' @title Evaluates the negative log-likelihood for model Count:M with lambda depending 
 #' on a covariate.
 #'
 #' @description
-#' Evaluates the negeative log-likelihood for model Count:M, assuming that lambda 
+#' Evaluates the negative log-likelihood for model Count:M, assuming that lambda 
 #' depends on a covariate \code{covar} that is site-dependent, 
 #' given initial parameter estimates and binary data from a multiple-occasion survey.
 #'

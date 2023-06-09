@@ -41,10 +41,10 @@ generate.PcountS = function(param, R, Tmax)
   return(ymat)
 }
 
-#' @title Evaluates the negeative log-likelihood for model PCount:S with lambda constant.
+#' @title Evaluates the negative log-likelihood for model PCount:S with lambda constant.
 #'
 #' @description
-#' Evaluates the negeative log-likelihood for model PCount:S, assuming that lambda 
+#' Evaluates the negative log-likelihood for model PCount:S, assuming that lambda 
 #' is constant, given initial parameter estimates and binary data from a multiple-occasion 
 #' survey.
 #'
@@ -129,7 +129,6 @@ nll.PcountS = function(param, R, Tmax, dat)
 #' gt=0.4620981
 #' # simulation of the covariate x over R sites for true parameters
 #' x=rnorm(R,0,1)
-#' hist(x)
 #' lambda=exp(b0t+b1t*x)
 #' mean(lambda)
 #' # true parameters
@@ -156,11 +155,11 @@ generate.PcountScov = function(param, R, Tmax, covar)
 }
 
 
-#' @title Evaluates the negeative log-likelihood for model PCount:S with lambda depending 
+#' @title Evaluates the negative log-likelihood for model PCount:S with lambda depending 
 #' on a covariate.
 #'
 #' @description
-#' Evaluates the negeative log-likelihood for model PCount:S, assuming that lambda 
+#' Evaluates the negative log-likelihood for model PCount:S, assuming that lambda 
 #' depends on a covariate \code{covar} that is site-dependent, 
 #' given initial parameter estimates and Poissonn count data from a single-occasion survey.
 #'
@@ -188,7 +187,6 @@ generate.PcountScov = function(param, R, Tmax, covar)
 #' gt=0.4620981
 #' # simulation of the covariate x over R sites for true parameters
 #' x=rnorm(R,0,1)
-#' hist(x)
 #' lambda=exp(b0t+b1t*x)
 #' mean(lambda)
 #' # true parameters
