@@ -44,12 +44,37 @@ nsurveys <- Karoodata %>%
 hist(nsurveys$surveys, main = "", xlab = "Number of surveys")
 ```
 
-For our purposes here, we choose a single species, the bokmakierie (*Telophorus zeylonus*), an attractive bushshrike that is quite common in the region.
+For our purposes here, we choose a single species, the bokmakierie (*Telophorus zeylonus*), an attractive bushshrike that is quite common in the region. We need to aggregate our data so that we have one line per survey. For each survey, we need to know whether a bokmakierie was detected (variable `bokmakierie` in the code below: 1 if detected and 0 if not) and what the time to detection (`ttd`) was. If no bokmakierie was detected during the survey, we set `ttd` equal to the maximum, i.e. 660 seconds (recall that each survey lasted 10 minutes).
 
 ```{r}
 # table(Karoodata$pentad, Karoodata$species)  # useful table to see how common each species is
 
-Karoodata$bokmakierie <- NA
-Karoodata$bokmakierie[Karoodata$species == "Bokmakierie"] <- 1
-Karoodata$bokmakierie[is.na(Karoodata$bokmakierie)] <- 0
+# detections:
+bdata <- Karoodata[Karoodata$species == "Bokmakierie", c("survey_id", "pentad", "ttd")]
+
+# non-detections:
+bdata.nd <- Karoodata[Karoodata$species != "Bokmakierie", c("survey_id", "pentad")]
+
+# we only need one non-detection per survey
+bdata.nd <- bdata.nd %>%
+  group_by(survey_id) %>%
+  summarise(pentad = first(pentad), ttd = 660)
+
+bdata <- rbind(bdata, bdata.nd)
+
+# get rid of non-detections for surveys where we also had a detection
+bdata <- bdata %>%
+  group_by(survey_id) %>%
+  summarise(pentad = first(pentad), ttd = min(ttd))
+
+head(bdata, n=20)
+```
+
+We now have a data frame with one line per survey. It gives the time to detection if a bokmakierie was detected and the maximum survey time otherwise. We now need to get this into the format that the function `nll.binT1` expects, with one row per site and the columns corresponding to the repeat surveys, holding detection times.
+
+```{r}
+bdata$surveynumber <- as.numeric(substr(bdata$survey_id, 11,12))
+
+bdat.binT1 <- matrix(NA, nrow = length(unique(bdata$pentad)), ncol = max(bdata$surveynumber)) # this doesn't work because surveys aren't numbered consecutively...
+
 ```
