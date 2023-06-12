@@ -73,8 +73,14 @@ head(bdata, n=20)
 We now have a data frame with one line per survey. It gives the time to detection if a bokmakierie was detected and the maximum survey time otherwise. We now need to get this into the format that the function `nll.binT1` expects, with one row per site and the columns corresponding to the repeat surveys, holding detection times.
 
 ```{r}
-bdata$surveynumber <- as.numeric(substr(bdata$survey_id, 11,12))
+bdata$surveynumber <- substr(bdata$survey_id, 11,12)
 
-bdat.binT1 <- matrix(NA, nrow = length(unique(bdata$pentad)), ncol = max(bdata$surveynumber)) # this doesn't work because surveys aren't numbered consecutively...
+bdata_wide <- bdata[,-1] %>% 
+  pivot_wider(
+    names_from = surveynumber,
+    values_from = ttd
+  )
+
+fit_binT1M <- optim(c(log(0.1), log(0.1)), nll.binT1M, R = dim(bdata_wide)[1], J = dim(bdata_wide)[2], Tmax = 660, dat = as.matrix(bdata_wide[,-1]))
 
 ```
