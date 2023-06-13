@@ -44,7 +44,9 @@ nsurveys <- Karoodata %>%
 hist(nsurveys$surveys, main = "", xlab = "Number of surveys")
 ```
 
-For our purposes here, we choose a single species, the bokmakierie (*Telophorus zeylonus*), an attractive bushshrike that is quite common in the region. We need to aggregate our data so that we have one line per survey. For each survey, we need to know whether a bokmakierie was detected (variable `bokmakierie` in the code below: 1 if detected and 0 if not) and what the time to detection (`ttd`) was. If no bokmakierie was detected during the survey, we set `ttd` equal to the maximum, i.e. 660 seconds (recall that each survey lasted 10 minutes).
+For our purposes here, we choose a single species, the bokmakierie (*Telophorus zeylonus*), an attractive bushshrike that is quite common in the region. 
+
+We need to aggregate our data so that we have one line per survey. For each survey, we need to know whether a bokmakierie was detected (variable `bokmakierie` in the code below: 1 if detected and 0 if not) and what the time to detection (`ttd`) was. If no bokmakierie was detected during the survey, we set `ttd` equal to the maximum, i.e. 660 seconds (recall that each survey lasted 10 minutes).
 
 ```{r}
 # table(Karoodata$pentad, Karoodata$species)  # useful table to see how common each species is
@@ -73,14 +75,46 @@ head(bdata, n=20)
 We now have a data frame with one line per survey. It gives the time to detection if a bokmakierie was detected and the maximum survey time otherwise. We now need to get this into the format that the function `nll.binT1` expects, with one row per site and the columns corresponding to the repeat surveys, holding detection times.
 
 ```{r}
-bdata$surveynumber <- substr(bdata$survey_id, 11,12)
+bdata_wide <- bdata[,-1] %>%
+  group_by(pentad) %>%
+  mutate(row = row_number()) %>%
+  tidyr::pivot_wider(names_from = row, values_from = ttd)
 
-bdata_wide <- bdata[,-1] %>% 
-  pivot_wider(
-    names_from = surveynumber,
-    values_from = ttd
-  )
+head(bdata_wide)
+```
 
-fit_binT1M <- optim(c(log(0.1), log(0.1)), nll.binT1M, R = dim(bdata_wide)[1], J = dim(bdata_wide)[2], Tmax = 660, dat = as.matrix(bdata_wide[,-1]))
+All sites have at least 10 visits but some sites have more. At the moment, the functions can only deal with a fixed number of visits to each site. We therefore take the first 10 visits to each site and discard the rest of the data.
 
+While we are at it, we also prepare the input data for the model `Binary:M`, where we only use detections and non-detection, i.e. we discard the information on time to detection.
+
+```{r}
+bdata_ttd <- bdata_dnd <- bdata_wide[,2:11]
+bdata_dnd[bdata_dnd < 660]  <- 1
+bdata_dnd[bdata_dnd == 660]  <- 0
+```
+
+So, in this final data set, we have `r dim(bdata_ttd)[2]` surveys to `r dim(bdata_ttd)[1]` sites, i.e. `r dim(bdata_ttd)[2] * dim(bdata_ttd)[1]` surveys in total. Bokmakieries were detected on `r sum(bdata_dnd)` surveys at `r sum(apply(bdata_dnd, 1, max))` of the sites.
+
+On most sites where bokmakieries were detected, they were encountered fairly early during the survey:
+
+```{r, echo=F}
+hist(bdata_ttd[bdata_ttd < 660], main = "", xlab = "Time to detection [s]")
+```
+
+We are now ready to fit the models to the data.
+
+We first fit the model using time-to-detection data, `BinaryT1:M`:
+
+```{r}
+fit_binT1M <- optim(c(log(10), log(0.001)), nll.binT1M, R = dim(bdata_ttd)[1], J = dim(bdata_ttd)[2], Tmax = 660, dat = as.matrix(bdata_ttd))
+estpar_binT1M=fit_binT1M$par
+exp(estpar_binT1M)
+```
+
+Then, we fit the model using only detection / non-detection data, `Binary:M`:
+
+```{r}
+fit_binM <- optim(c(log(10), log(0.001)), nll.binM, R = dim(bdata_ttd)[1], J = dim(bdata_ttd)[2], Tmax = 660, dat = as.matrix(bdata_dnd))
+estpar_binM=fit_binM$par
+exp(estpar_binM)
 ```
