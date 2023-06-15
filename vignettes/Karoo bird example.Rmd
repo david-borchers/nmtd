@@ -57,7 +57,7 @@ head(sort(apply(karootbl, 2, sum), decreasing = T)) # number of detections by sp
 head(sort(apply(karootbl, 2, function(x){sum(x>0)}), decreasing = T)) # number of detections by species
 ```
 
-For our purposes here, we choose a single species, the rufous-eared warbler (*Telophorus zeylonus*), an attractive warbler that is quite common in the region. 
+For our purposes here, we choose a single species, the rufous-eared warbler (*Malcorus pectoralis*), an attractive warbler that is quite common in the region. 
 
 We need to aggregate our data so that we have one line per survey. For each survey, we need to know whether a rufous-eared warbler was detected and what the time to detection (`ttd`) was. If no rufous-eared warbler was detected during the survey, we set `ttd` equal to the maximum, i.e. 660 seconds (recall that each survey lasted 10 minutes).
 
