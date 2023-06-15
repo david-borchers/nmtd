@@ -41,21 +41,32 @@ nsurveys <- Karoodata %>%
   group_by(pentad) %>%
   summarise(surveys = length(unique(survey_id)))
 
+# some data exploration
 hist(nsurveys$surveys, main = "", xlab = "Number of surveys")
 ```
 
-For our purposes here, we choose a single species, the bokmakierie (*Telophorus zeylonus*), an attractive bushshrike that is quite common in the region. 
+We find that sparse data pose a challenge for abundance models, even when we have time-to-detection data. When most surveys result in no detection for a species, then there is just not enough information to reliably estimate abundance for that species.
 
-We need to aggregate our data so that we have one line per survey. For each survey, we need to know whether a bokmakierie was detected (variable `bokmakierie` in the code below: 1 if detected and 0 if not) and what the time to detection (`ttd`) was. If no bokmakierie was detected during the survey, we set `ttd` equal to the maximum, i.e. 660 seconds (recall that each survey lasted 10 minutes).
+Let's therefore see what the most common species are in this data set:
 
 ```{r}
-# table(Karoodata$pentad, Karoodata$species)  # useful table to see how common each species is
+karootbl <- table(Karoodata$pentad, Karoodata$species)
 
+# looking for the most common species:
+head(sort(apply(karootbl, 2, sum), decreasing = T)) # number of detections by species
+head(sort(apply(karootbl, 2, function(x){sum(x>0)}), decreasing = T)) # number of detections by species
+```
+
+For our purposes here, we choose a single species, the rufous-eared warbler (*Telophorus zeylonus*), an attractive warbler that is quite common in the region. 
+
+We need to aggregate our data so that we have one line per survey. For each survey, we need to know whether a rufous-eared warbler was detected and what the time to detection (`ttd`) was. If no rufous-eared warbler was detected during the survey, we set `ttd` equal to the maximum, i.e. 660 seconds (recall that each survey lasted 10 minutes).
+
+```{r}
 # detections:
-bdata <- Karoodata[Karoodata$species == "Bokmakierie", c("survey_id", "pentad", "ttd")]
+bdata <- Karoodata[Karoodata$species == "Rufous-eared Warbler", c("survey_id", "pentad", "ttd")]
 
 # non-detections:
-bdata.nd <- Karoodata[Karoodata$species != "Bokmakierie", c("survey_id", "pentad")]
+bdata.nd <- Karoodata[Karoodata$species != "Rufous-eared Warbler", c("survey_id", "pentad")]
 
 # we only need one non-detection per survey
 bdata.nd <- bdata.nd %>%
@@ -72,7 +83,7 @@ bdata <- bdata %>%
 head(bdata, n=20)
 ```
 
-We now have a data frame with one line per survey. It gives the time to detection if a bokmakierie was detected and the maximum survey time otherwise. We now need to get this into the format that the function `nll.binT1` expects, with one row per site and the columns corresponding to the repeat surveys, holding detection times.
+We now have a data frame with one line per survey. It gives the time to detection if a rufous-eared warbler was detected and the maximum survey time otherwise. We now need to get this into the format that the function `nll.binT1` expects, with one row per site and the columns corresponding to the repeat surveys, holding detection times.
 
 ```{r}
 bdata_wide <- bdata[,-1] %>%
@@ -93,13 +104,19 @@ bdata_dnd[bdata_dnd < 660]  <- 1
 bdata_dnd[bdata_dnd == 660]  <- 0
 ```
 
-So, in this final data set, we have `r dim(bdata_ttd)[2]` surveys to `r dim(bdata_ttd)[1]` sites, i.e. `r dim(bdata_ttd)[2] * dim(bdata_ttd)[1]` surveys in total. Bokmakieries were detected on `r sum(bdata_dnd)` surveys at `r sum(apply(bdata_dnd, 1, max))` of the sites.
+So, in this final data set, we have `r dim(bdata_ttd)[2]` surveys to `r dim(bdata_ttd)[1]` sites, i.e. `r dim(bdata_ttd)[2] * dim(bdata_ttd)[1]` surveys in total. Rufous-eared warblers were detected on `r sum(bdata_dnd)` surveys at `r sum(apply(bdata_dnd, 1, max))` of the sites.
 
-On most sites where bokmakieries were detected, they were encountered fairly early during the survey:
+On most sites where rufous-eared warbler were detected, they were encountered fairly early during the survey:
 
 ```{r, echo=F}
 hist(bdata_ttd[bdata_ttd < 660], main = "", xlab = "Time to detection [s]")
 ```
+
+<!-- We find that rescaling the detection times so that the maximum is 1 helps with convergence. -->
+
+<!-- ```{r} -->
+<!-- bdata_ttd <- bdata_ttd/max(bdata_ttd) -->
+<!-- ``` -->
 
 We are now ready to fit the models to the data.
 
