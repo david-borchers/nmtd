@@ -5,4 +5,4 @@ for (i in pkgs){
     install.packages(i)
   }
 }
-devtools::install_github("david-borchers/nmtd",build = TRUE)
+devtools::install_github("david-borchers/nmtd", build = TRUE, build_vignettes = TRUE)
