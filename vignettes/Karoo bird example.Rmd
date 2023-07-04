@@ -20,6 +20,7 @@ This vignette shows a worked example of how the `nmtd` package can be used to fi
 ```{r setup, message=F}
 library(nmtd)
 library(tidyverse)
+library(kableExtra)
 ```
 
 ## Getting the data ready
@@ -123,15 +124,34 @@ We are now ready to fit the models to the data.
 We first fit the model using time-to-detection data, `BinaryT1:M`:
 
 ```{r}
-fit_binT1M <- optim(c(log(10), log(0.001)), nll.binT1M, R = dim(bdata_ttd)[1], J = dim(bdata_ttd)[2], Tmax = 660, dat = as.matrix(bdata_ttd))
+fit_binT1M <- optim(c(log(10), log(0.001)), nll.binT1M, R = dim(bdata_ttd)[1], 
+                    J = dim(bdata_ttd)[2], Tmax = 660, dat = as.matrix(bdata_ttd),
+                    hessian=TRUE)
 estpar_binT1M=fit_binT1M$par
-exp(estpar_binT1M)
+est = exp(estpar_binT1M) # point estimate
+names(est) = c("lambda","h")
+vcv = solve(fit_binT1M$hessian) # variance-covariance matrix
+# now get 95% confidence bound estimates
+lower = exp(estpar_binT1M - 1.96*sqrt(diag(vcv)))
+upper = exp(estpar_binT1M + 1.96*sqrt(diag(vcv)))
+estdf = data.frame(est=signif(est,3), lcl=signif(lower,3), 
+                   ucl=signif(upper,3),ci.width=signif(upper-lower,3))
+kable(estdf)
 ```
 
-Then, we fit the model using only detection / non-detection data, `Binary:M`:
+Then we fit the model using only detection / non-detection data, `Binary:M`:
 
 ```{r}
-fit_binM <- optim(c(log(10), log(0.001)), nll.binM, R = dim(bdata_ttd)[1], J = dim(bdata_ttd)[2], Tmax = 660, dat = as.matrix(bdata_dnd))
+fit_binM <- optim(c(log(10), log(0.001)), nll.binM, R = dim(bdata_ttd)[1], J = dim(bdata_ttd)[2], 
+                  Tmax = 660, dat = as.matrix(bdata_dnd),hessian=TRUE)
 estpar_binM=fit_binM$par
-exp(estpar_binM)
+est = exp(estpar_binM) # point estimate
+names(est) = c("lambda","h")
+vcv = solve(fit_binM$hessian) # variance-covariance matrix
+# now get 95% confidence bound estimates
+lower = exp(estpar_binM - 1.96*sqrt(diag(vcv)))
+upper = exp(estpar_binM + 1.96*sqrt(diag(vcv)))
+estdf = data.frame(est=signif(est,3), lcl=signif(lower,3), ucl=signif(upper,3), 
+                   ci.width=signif(upper-lower,3))
+kable(estdf)
 ```
